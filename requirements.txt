@@ -6,3 +6,6 @@ scipy>=1.15.0
 tabpfn>=2.0.1
 pandas>=2.2.0
 seaborn>=0.12.0
+openml>=0.15.0
+synthcity>=0.2.12
+imbalanced-learn>=0.12.0

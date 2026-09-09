@@ -5,12 +5,12 @@
 
 ![TabPFGen Overview](images/tabpfgen_featureimage.jpg)
 
-TabPFGen is a Python library for generating high-quality synthetic tabular data using energy-based modeling and stochastic gradient Langevin dynamics (SGLD). Built on the TabPFN transformer architecture, it supports both classification and regression tasks with comprehensive visualization tools.
+TabPFGen is a Python library for reproducing the TabPFGen paper's numerical classification generator: a frozen TabPFN classifier is used as a class-conditional energy model and synthetic features are sampled with stochastic gradient Langevin dynamics (SGLD).
 
 ## Key Features
 
 - Energy-based synthetic data generation without additional training
-- Support for both classification and regression tasks
+- Support for numerical classification tasks
 - Class-balanced sampling option for imbalanced datasets
 - Comprehensive visualization tools to validate synthetic data quality
 - Built on pre-trained TabPFN transformer architecture
@@ -61,46 +61,19 @@ visualize_classification_results(
 )
 ```
 
-### Regression Example
-
-```python
-from tabpfgen import TabPFGen
-from tabpfgen.visuals import visualize_regression_results
-from sklearn.datasets import load_diabetes
-
-# Load regression dataset
-X, y = load_diabetes(return_X_y=True)
-
-# Initialize generator
-generator = TabPFGen(n_sgld_steps=500)
-
-# Generate synthetic regression data
-X_synth, y_synth = generator.generate_regression(
-    X, y,
-    n_samples=100,
-    use_quantiles=True
-)
-
-# Visualize results
-visualize_regression_results(
-    X, y, X_synth, y_synth,
-    feature_names=load_diabetes().feature_names
-)
-```
-
 ## Documentation
 
 For detailed documentation and tutorials, visit our [tutorial pages](https://github.com/sebhaan/TabPFGen/blob/main/tutorial/index.md).
 
 ## How It Works
 
-TabPFGen uses a two-step approach:
+TabPFGen uses the paper's class-conditional energy-based approach:
 
-1. **Feature Generation**: Using SGLD (Stochastic Gradient Langevin Dynamics) guided by an energy function to create synthetic features that statistically resemble the original data.
+1. **Class-Conditional Energy**: Given manually defined synthetic labels, compute `E(x_synth | y_synth) = -f_TabPFN(x_synth)[y_synth]`.
 
-2. **Target Prediction**: Leveraging TabPFN as an "expert consultant" to predict appropriate target values (classification labels or regression values) for the synthetic features.
+2. **SGLD Sampling**: Backpropagate that energy to `x_synth` and update synthetic features with SGLD while TabPFN stays frozen.
 
-The entire process is guided by an energy function that compares synthetic data points to the original data, ensuring statistical similarity.
+Synthetic labels are not refined after generation; they are the conditioning labels used during sampling. The optional `swapped_energy_weight` parameter adds the paper's swapped-context regularization term on top of the core energy.
 
 ## Visualization
 

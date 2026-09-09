@@ -5,7 +5,7 @@
 
 ![TabPFGen Overview](docs/images/tabpfgen_featureimage.jpg)
 
-TabPFGen is a Python library for generating high-quality synthetic tabular data using energy-based modeling and stochastic gradient Langevin dynamics (SGLD). It supports both classification and regression tasks with built-in visualization capabilities.
+TabPFGen is a Python library for reproducing the TabPFGen paper's numerical classification generator: a frozen TabPFN classifier is used as a class-conditional energy model and synthetic features are sampled with stochastic gradient Langevin dynamics (SGLD).
 
 *Integration with TabPFN Extensions: TabPFGen is being integrated into the tabpfn-extensions ecosystem as a separate module ([TabPFGen Data Synthesizer Extension](https://github.com/sebhaan/tabpfn-extensions/tree/tabpfgen-datasynthesizer/src/tabpfn_extensions/tabpfgen_datasynthesizer), [PR #83](https://github.com/PriorLabs/tabpfn-extensions/pull/83)), which will enable seamless integration with other TabPFN tools and extensions.*
 
@@ -26,7 +26,7 @@ What makes TabPFGen interesting is that it's built on the TabPFN transformer arc
 ## Key Features
 
 - Energy-based synthetic data generation
-- Support for both classification and regression tasks
+- Support for numerical classification tasks
 - Automatic dataset balancing for imbalanced classes
 - Class-balanced sampling option
 - Comprehensive visualization tools
@@ -106,34 +106,7 @@ visualize_classification_results(
 )
 ```
 
-**Note on Balancing Results**: The final class distribution may be approximately balanced rather than perfectly balanced. This is due to TabPFN's label refinement process, which prioritizes data quality and realism over exact class counts. The method ensures significant improvement in class balance while maintaining high-quality synthetic samples.
-
-### Regression Example
-
-```python
-from tabpfgen import TabPFGen
-from tabpfgen.visuals import visualize_regression_results
-from sklearn.datasets import load_diabetes
-
-# Load regression dataset
-X, y = load_diabetes(return_X_y=True)
-
-# Initialize generator
-generator = TabPFGen(n_sgld_steps=500)
-
-# Generate synthetic regression data
-X_synth, y_synth = generator.generate_regression(
-    X, y,
-    n_samples=100,
-    use_quantiles=True
-)
-
-# Visualize results
-visualize_regression_results(
-    X, y, X_synth, y_synth,
-    feature_names=load_diabetes().feature_names
-)
-```
+**Note on Balancing Results**: The synthetic labels are fixed before sampling, following the paper's manually defined `y_synth` setup. Dataset balancing therefore generates the exact missing class labels for eligible classes.
 
 ## Visualization Features
 
@@ -146,35 +119,24 @@ The package includes comprehensive visualization tools:
 - Feature distribution comparisons
 - Feature correlation matrices
 
-### Regression Visualizations
-- Target value distribution comparison
-- Q-Q plots for distribution analysis
-- Box plot comparisons
-- Feature importance analysis
-- Scatter plots of important features
-- t-SNE visualization with target value mapping
-- Residuals analysis
-- Feature correlation matrices
-
 ## Parameters
 
 ### TabPFGen
 - `n_sgld_steps`: Number of SGLD iterations (default: 1000)
 - `sgld_step_size`: Step size for SGLD updates (default: 0.01)
 - `sgld_noise_scale`: Scale of noise in SGLD (default: 0.01)
+- `init_noise_std`: Standard deviation of the Gaussian noise used for row-bootstrap initialization (default: 0.01)
+- `swapped_energy_weight`: Weight for the paper's swapped-context regularization term (default: 0.0, corresponding to `TabPFGen_core`)
 - `device`: Computing device ('cpu' or 'cuda', default: 'auto')
 
 ### Classification Generation
 - `n_samples`: Number of synthetic samples to generate
 - `balance_classes`: Whether to generate balanced class distributions (default: True)
+- `y_synth`: Optional manually defined synthetic labels, matching Algorithm 1 in the paper
 
 ### Dataset Balancing
 - `target_per_class`: Target number of samples per class (default: None, uses majority class size)  
-- `min_class_size`: Minimum class size to include in balancing (default: 5)
-
-### Regression Generation
-- `n_samples`: Number of synthetic samples to generate
-- `use_quantiles`: Whether to use quantile-based sampling (default: True)
+- `min_class_size`: Minimum class size to include in balancing (default: 1)
 
 ### Tests
 
@@ -188,33 +150,31 @@ For detailed documentation and tutorials, visit our [tutorial pages](https://git
 
 ## How It Works
 
-1. **Energy-Based Modeling**: Uses a distance-based energy function that combines:
-   - Feature space distances between synthetic and real samples
-   - Class-conditional information for classification tasks
+1. **Class-Conditional Energy**: Uses the paper energy `E(x_synth | y_synth) = -f_TabPFN(x_synth)[y_synth]`, where TabPFN is conditioned on the training set.
 
 2. **SGLD Sampling**: Generates synthetic samples through iterative updates:
    ```
    x_new = x - step_size * gradient + noise_scale * random_noise
    ```
 
-3. **Quality Assurance**:
+3. **Optional Full-TabPFGen Regularization**: Set `swapped_energy_weight > 0` to add the paper's swapped-context energy term, where TabPFN is conditioned on the synthetic batch and scores the original training rows.
+
+4. **Quality Assurance**:
    - Automatic feature scaling
    - Class balance maintenance
    - Distribution matching through energy minimization
-   - Quantile-based sampling for regression
 
 ## Limitations
 
 - Memory usage scales with dataset size
 - SGLD convergence can be sensitive to step size parameters
 - Computation time increases with `n_sgld_steps`
-- Dataset balancing produces approximate rather than perfect balance due to TabPFN's quality-focused label refinement process
+- This implementation targets the paper's numerical classification setting. Regression generation is intentionally out of scope.
 
 
 ## References
 
-This project is inspired by the TabPFGen method described in Ma, Junwei, et al. This is an independent implementation and may not strictly follow all aspects 
-of the original approach. We are not affiliated with the original authors.
+This project implements the core TabPFGen class-conditional energy and SGLD sampler described in Ma, Junwei, et al. We are not affiliated with the original authors.
 
 Ma, Junwei, et al. "TabPFGen--Tabular Data Generation with TabPFN." arXiv preprint arXiv:2406.05216 (2024).
 
