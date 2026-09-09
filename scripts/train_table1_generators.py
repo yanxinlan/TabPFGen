@@ -136,7 +136,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset-id", type=int, required=True)
     parser.add_argument(
         "--generator",
-        choices=("smote", "ctgan", "tvae", "nflow", "rtvae", "tabddpm"),
+        choices=("smote", "ctgan", "tvae", "nflow", "rtvae", "tabddpm", "tabpfgen"),
         required=True,
     )
     parser.add_argument("--seed", type=int, default=0)
@@ -148,6 +148,10 @@ def parse_args() -> argparse.Namespace:
         help="Maximum training iterations for neural SynthCity generators.",
     )
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--tabpfgen-steps", type=int, default=1000)
+    parser.add_argument("--tabpfgen-step-size", type=float, default=0.01)
+    parser.add_argument("--tabpfgen-noise-scale", type=float, default=0.01)
+    parser.add_argument("--tabpfgen-init-noise-std", type=float, default=0.01)
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
@@ -215,10 +219,16 @@ def train_smote(train_df: pd.DataFrame, seed: int) -> tuple[None, pd.DataFrame]:
 
     X = train_df.drop(columns=["target"])
     y = train_df["target"]
-    smote = SMOTE(random_state=seed)
+    rng = np.random.default_rng(seed)
+    target_counts = y.value_counts()
+    desired = target_counts.to_dict()
+    for cls, count in target_counts.items():
+        desired[cls] = int(count * 2)
+
+    k_neighbors = max(1, min(5, int(target_counts.min()) - 1))
+    smote = SMOTE(random_state=seed, sampling_strategy=desired, k_neighbors=k_neighbors)
     X_res, y_res = smote.fit_resample(X, y)
 
-    n_needed = len(train_df)
     synthetic = pd.concat(
         [
             pd.DataFrame(X_res, columns=X.columns).iloc[len(train_df) :],
@@ -226,15 +236,14 @@ def train_smote(train_df: pd.DataFrame, seed: int) -> tuple[None, pd.DataFrame]:
         ],
         axis=1,
     ).reset_index(drop=True)
-
-    if len(synthetic) < n_needed:
-        extra = synthetic.sample(
-            n=n_needed - len(synthetic),
-            replace=True,
+    if len(synthetic) != len(train_df):
+        synthetic = synthetic.sample(
+            n=len(train_df),
+            replace=len(synthetic) < len(train_df),
             random_state=seed,
         )
-        synthetic = pd.concat([synthetic, extra], ignore_index=True)
-    return None, synthetic.iloc[:n_needed].reset_index(drop=True)
+    synthetic = synthetic.sample(frac=1.0, random_state=int(rng.integers(0, 2**31 - 1)))
+    return None, synthetic.reset_index(drop=True)
 
 
 def resolve_plugin_name(requested: str) -> str:
@@ -275,6 +284,42 @@ def train_synthcity_generator(
     return plugin, synthetic.reset_index(drop=True), plugin_name
 
 
+def train_tabpfgen_generator(
+    train_df: pd.DataFrame,
+    seed: int,
+    device: str,
+    n_steps: int,
+    step_size: float,
+    noise_scale: float,
+    init_noise_std: float,
+) -> tuple[None, pd.DataFrame]:
+    from tabpfgen import TabPFGen
+
+    X = train_df.drop(columns=["target"]).to_numpy(dtype=np.float32)
+    y = train_df["target"].to_numpy()
+    rng = np.random.default_rng(seed)
+    y_synth = rng.choice(y, size=len(y), replace=True)
+
+    generator = TabPFGen(
+        n_sgld_steps=n_steps,
+        sgld_step_size=step_size,
+        sgld_noise_scale=noise_scale,
+        init_noise_std=init_noise_std,
+        device=device,
+        random_state=seed,
+    )
+    X_synth, y_synth = generator.generate_classification(
+        X,
+        y,
+        n_samples=len(train_df),
+        balance_classes=False,
+        y_synth=y_synth,
+    )
+    synthetic = pd.DataFrame(X_synth, columns=train_df.drop(columns=["target"]).columns)
+    synthetic["target"] = y_synth
+    return None, synthetic.reset_index(drop=True)
+
+
 def save_generator(generator: Any, out_dir: Path) -> str | None:
     if generator is None:
         return None
@@ -312,6 +357,17 @@ def main() -> None:
     if args.generator == "smote":
         generator, synthetic = train_smote(train_df, args.seed)
         resolved_name = "smote"
+    elif args.generator == "tabpfgen":
+        generator, synthetic = train_tabpfgen_generator(
+            train_df,
+            args.seed,
+            args.device,
+            args.tabpfgen_steps,
+            args.tabpfgen_step_size,
+            args.tabpfgen_noise_scale,
+            args.tabpfgen_init_noise_std,
+        )
+        resolved_name = "tabpfgen"
     else:
         generator, synthetic, resolved_name = train_synthcity_generator(
             train_df,
@@ -325,6 +381,23 @@ def main() -> None:
     train_df.to_csv(train_path, index=False)
     test_df.to_csv(test_path, index=False)
     synthetic.to_csv(synthetic_path, index=False)
+
+    if args.generator == "tabpfgen":
+        hyperparameters = {
+            "n_sgld_steps": args.tabpfgen_steps,
+            "sgld_step_size": args.tabpfgen_step_size,
+            "sgld_noise_scale": args.tabpfgen_noise_scale,
+            "init_noise_std": args.tabpfgen_init_noise_std,
+        }
+    elif args.generator == "smote":
+        hyperparameters = {}
+    else:
+        hyperparameters = {
+            **SYNTHCITY_HYPERPARAMS[args.generator],
+            "n_iter": args.n_iter,
+            "random_state": args.seed,
+            "device": args.device,
+        }
 
     metadata = {
         "dataset_id": args.dataset_id,
@@ -347,14 +420,7 @@ def main() -> None:
             "synthetic": str(synthetic_path),
             "generator": model_path,
         },
-        "hyperparameters": {}
-        if args.generator == "smote"
-        else {
-            **SYNTHCITY_HYPERPARAMS[args.generator],
-            "n_iter": args.n_iter,
-            "random_state": args.seed,
-            "device": args.device,
-        },
+        "hyperparameters": hyperparameters,
     }
     metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     print(f"Wrote synthetic data: {synthetic_path}")
