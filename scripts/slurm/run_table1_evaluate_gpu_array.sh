@@ -16,7 +16,9 @@ REPO_ROOT="${REPO_ROOT:-/projects/prjs1237/project/tabpfgen/TabPFGen}"
 DATA_ROOT="${DATA_ROOT:-${REPO_ROOT}/data/openml_cc18_tabpfgen}"
 GENERATOR_ROOT="${GENERATOR_ROOT:-${REPO_ROOT}/outputs/table1_generators}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-${REPO_ROOT}/outputs/table1_downstream}"
-PYTHON_BIN="${PYTHON_BIN:-${REPO_ROOT}/.venv/bin/python}"
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate tabpfgen
+PYTHON_BIN="${PYTHON_BIN:-$(which python)}"
 DEVICE="${DEVICE:-cuda}"
 OVERWRITE_FLAG="${OVERWRITE_FLAG:-}"
 TASK_OFFSET="${TASK_OFFSET:-0}"

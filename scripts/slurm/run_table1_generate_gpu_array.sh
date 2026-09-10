@@ -15,7 +15,9 @@ set -euo pipefail
 REPO_ROOT="${REPO_ROOT:-/projects/prjs1237/project/tabpfgen/TabPFGen}"
 DATA_ROOT="${DATA_ROOT:-${REPO_ROOT}/data/openml_cc18_tabpfgen}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-${REPO_ROOT}/outputs/table1_generators}"
-PYTHON_BIN="${PYTHON_BIN:-${REPO_ROOT}/.venv/bin/python}"
+source ~/anaconda3/etc/profile.d/conda.sh
+conda activate tabpfgen
+PYTHON_BIN="${PYTHON_BIN:-$(which python)}"
 DEVICE="${DEVICE:-cuda}"
 N_ITER="${N_ITER:-1000}"
 TABPFGEN_STEPS="${TABPFGEN_STEPS:-1000}"
