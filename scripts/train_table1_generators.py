@@ -18,12 +18,19 @@ import argparse
 import json
 import pickle
 import random
+import sys
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = REPO_ROOT / "src"
+if SRC_ROOT.exists():
+    sys.path.insert(0, str(SRC_ROOT))
 
 
 SYNTHCITY_HYPERPARAMS: dict[str, dict[str, Any]] = {

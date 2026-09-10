@@ -15,9 +15,9 @@ set -euo pipefail
 REPO_ROOT="${REPO_ROOT:-/projects/prjs1237/project/tabpfgen/TabPFGen}"
 DATA_ROOT="${DATA_ROOT:-${REPO_ROOT}/data/openml_cc18_tabpfgen}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-${REPO_ROOT}/outputs/table1_generators}"
-source ~/anaconda3/etc/profile.d/conda.sh
-conda activate tabpfgen
-PYTHON_BIN="${PYTHON_BIN:-$(which python)}"
+CONDA_BASE="${CONDA_BASE:-${HOME}/anaconda3}"
+TABPFGEN_CONDA_ENV="${TABPFGEN_CONDA_ENV:-tabpfgen}"
+SYNTHCITY_CONDA_ENV="${SYNTHCITY_CONDA_ENV:-synthcity}"
 DEVICE="${DEVICE:-cuda}"
 N_ITER="${N_ITER:-1000}"
 TABPFGEN_STEPS="${TABPFGEN_STEPS:-1000}"
@@ -50,8 +50,19 @@ DATASET_ID="${DATASET_IDS[$DATASET_IDX]}"
 SEED="${SEEDS[$SEED_IDX]}"
 GENERATOR="${GENERATORS[$GEN_IDX]}"
 
+source "${CONDA_BASE}/etc/profile.d/conda.sh"
+if [[ "${GENERATOR}" == "tabpfgen" ]]; then
+  CONDA_ENV="${TABPFGEN_CONDA_ENV}"
+else
+  CONDA_ENV="${SYNTHCITY_CONDA_ENV}"
+fi
+conda activate "${CONDA_ENV}"
+PYTHON_BIN="${PYTHON_BIN:-$(command -v python)}"
+
 echo "REPO_ROOT=${REPO_ROOT}"
 echo "DATASET_ID=${DATASET_ID} SEED=${SEED} GENERATOR=${GENERATOR}"
+echo "CONDA_ENV=${CONDA_ENV}"
+echo "PYTHON_BIN=${PYTHON_BIN}"
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-unset}"
 
 cd "${REPO_ROOT}"
