@@ -67,7 +67,6 @@ SYNTHCITY_HYPERPARAMS: dict[str, dict[str, Any]] = {
         "encoder_dropout": 0.1,
         "data_encoder_max_clusters": 10,
         "robust_divergence_beta": 2,
-        "clipping_value": 1,
         "sampling_patience": 500,
     },
     "ctgan": {
@@ -256,7 +255,7 @@ def train_smote(train_df: pd.DataFrame, seed: int) -> tuple[None, pd.DataFrame]:
 def resolve_plugin_name(requested: str) -> str:
     from synthcity.plugins import Plugins
 
-    plugins = Plugins()
+    plugins = Plugins(categories=["generic"])
     available = set(plugins.list())
     for alias in PLUGIN_ALIASES[requested]:
         if alias in available:
@@ -279,11 +278,16 @@ def train_synthcity_generator(
     plugin_name = resolve_plugin_name(generator_name)
     params = dict(SYNTHCITY_HYPERPARAMS[generator_name])
     params["random_state"] = seed
-    params["device"] = device
+    if generator_name == "tabddpm":
+        import torch
+
+        params["device"] = torch.device(device)
+    else:
+        params["device"] = device
     if "n_iter" not in params:
         params["n_iter"] = n_iter
 
-    plugin = Plugins().get(plugin_name, **params)
+    plugin = Plugins(categories=["generic"]).get(plugin_name, **params)
     plugin.fit(train_df)
     synthetic = dataframe_from_generated(
         plugin.generate(count=len(train_df), random_state=seed)

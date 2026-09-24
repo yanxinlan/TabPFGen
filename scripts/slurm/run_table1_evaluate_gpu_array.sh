@@ -12,7 +12,8 @@
 
 set -euo pipefail
 
-REPO_ROOT="${REPO_ROOT:-/projects/prjs1237/project/tabpfgen/TabPFGen}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${REPO_ROOT:-$(cd -- "${SCRIPT_DIR}/../.." && pwd)}"
 DATA_ROOT="${DATA_ROOT:-${REPO_ROOT}/data/openml_cc18_tabpfgen}"
 GENERATOR_ROOT="${GENERATOR_ROOT:-${REPO_ROOT}/outputs/table1_generators}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-${REPO_ROOT}/outputs/table1_downstream}"
@@ -24,7 +25,12 @@ TASK_OFFSET="${TASK_OFFSET:-0}"
 
 source "${CONDA_BASE}/etc/profile.d/conda.sh"
 conda activate "${CONDA_ENV}"
-PYTHON_BIN="${PYTHON_BIN:-$(command -v python)}"
+PYTHON_BIN="${CONDA_PREFIX}/bin/python"
+
+if [[ ! -x "${PYTHON_BIN}" ]]; then
+  echo "Python executable not found for Conda environment ${CONDA_ENV}: ${PYTHON_BIN}" >&2
+  exit 1
+fi
 
 DATASET_IDS=(11 14 16 18 22 37 54 458 1049 1050 1063 1068 1462 1464 1494 1510 40982 40994)
 SEEDS=(0 1 2)

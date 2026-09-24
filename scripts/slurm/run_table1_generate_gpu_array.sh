@@ -12,7 +12,8 @@
 
 set -euo pipefail
 
-REPO_ROOT="${REPO_ROOT:-/projects/prjs1237/project/tabpfgen/TabPFGen}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${REPO_ROOT:-$(cd -- "${SCRIPT_DIR}/../.." && pwd)}"
 DATA_ROOT="${DATA_ROOT:-${REPO_ROOT}/data/openml_cc18_tabpfgen}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-${REPO_ROOT}/outputs/table1_generators}"
 CONDA_BASE="${CONDA_BASE:-${HOME}/anaconda3}"
@@ -57,7 +58,16 @@ else
   CONDA_ENV="${SYNTHCITY_CONDA_ENV}"
 fi
 conda activate "${CONDA_ENV}"
-PYTHON_BIN="${PYTHON_BIN:-$(command -v python)}"
+PYTHON_BIN="${CONDA_PREFIX}/bin/python"
+CACHE_ROOT="${SLURM_TMPDIR:-/tmp}/tabpfgen-${SLURM_JOB_ID:-$$}"
+export MPLCONFIGDIR="${MPLCONFIGDIR:-${CACHE_ROOT}/matplotlib}"
+export KEOPS_CACHE_FOLDER="${KEOPS_CACHE_FOLDER:-${CACHE_ROOT}/keops}"
+mkdir -p "${MPLCONFIGDIR}" "${KEOPS_CACHE_FOLDER}"
+
+if [[ ! -x "${PYTHON_BIN}" ]]; then
+  echo "Python executable not found for Conda environment ${CONDA_ENV}: ${PYTHON_BIN}" >&2
+  exit 1
+fi
 
 echo "REPO_ROOT=${REPO_ROOT}"
 echo "DATASET_ID=${DATASET_ID} SEED=${SEED} GENERATOR=${GENERATOR}"

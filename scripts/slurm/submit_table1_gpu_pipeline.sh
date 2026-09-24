@@ -1,14 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 
-REPO_ROOT="${REPO_ROOT:-/projects/prjs1237/project/tabpfgen/TabPFGen}"
-LOG_ROOT="${LOG_ROOT:-/projects/prjs1237/project/tabpfgen/logs}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${REPO_ROOT:-$(cd -- "${SCRIPT_DIR}/../.." && pwd)}"
+LOG_ROOT="${LOG_ROOT:-$(cd -- "${REPO_ROOT}/.." && pwd)/logs}"
 
 mkdir -p "${LOG_ROOT}/table1_generate" "${LOG_ROOT}/table1_evaluate"
 
 cd "${REPO_ROOT}"
 
-GEN_JOB_ID=$(sbatch --parsable scripts/slurm/run_table1_generate_gpu_array.sh)
+GEN_JOB_ID=$(
+  sbatch \
+    --parsable \
+    --export=ALL,REPO_ROOT="${REPO_ROOT}" \
+    scripts/slurm/run_table1_generate_gpu_array.sh
+)
 echo "Submitted generation array: ${GEN_JOB_ID}"
 
 TOTAL_EVAL_TASKS=3240
@@ -28,7 +34,7 @@ while (( offset < TOTAL_EVAL_TASKS )); do
       --parsable \
       --dependency=afterok:${GEN_JOB_ID} \
       --array=0-${array_end}%120 \
-      --export=ALL,TASK_OFFSET=${offset} \
+      --export=ALL,REPO_ROOT="${REPO_ROOT}",TASK_OFFSET=${offset} \
       scripts/slurm/run_table1_evaluate_gpu_array.sh
   )
   EVAL_JOB_IDS+=("${eval_job_id}")
