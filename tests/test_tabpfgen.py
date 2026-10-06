@@ -4,6 +4,7 @@ import numpy as np
 import torch
 
 from tabpfgen import TabPFGen
+from tabpfgen.tabpfgen import _TabPFNLogitEnergy
 
 
 class QuadraticLogitEnergy:
@@ -105,6 +106,28 @@ class TestTabPFGenPaperAlgorithm(unittest.TestCase):
     def test_regression_is_out_of_scope(self):
         with self.assertRaises(NotImplementedError):
             self.generator.generate_regression(self.X, np.array([0.1, 0.2]), 2)
+
+    def test_tabpfn_adapter_prefers_predict_logits_over_raw_predict(self):
+        class Classifier:
+            def __init__(self):
+                self.used = None
+
+            def predict_logits(self, x):
+                self.used = "predict_logits"
+                return torch.ones((x.shape[0], 2), device=x.device)
+
+            def _raw_predict(self, x, return_logits=False):
+                del return_logits
+                self.used = "_raw_predict"
+                return torch.zeros((x.shape[0], 2), device=x.device)
+
+        adapter = object.__new__(_TabPFNLogitEnergy)
+        adapter.classifier = Classifier()
+
+        logits = adapter.logits(torch.zeros((3, 2)))
+
+        self.assertEqual(adapter.classifier.used, "predict_logits")
+        torch.testing.assert_close(logits, torch.ones((3, 2)))
 
 
 if __name__ == "__main__":

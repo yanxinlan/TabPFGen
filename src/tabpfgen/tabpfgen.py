@@ -65,10 +65,10 @@ class _TabPFNLogitEnergy:
             self.classifier.fit(x_train, y_train)
 
     def logits(self, x_query: torch.Tensor) -> torch.Tensor:
-        if hasattr(self.classifier, "_raw_predict"):
-            logits = self.classifier._raw_predict(x_query, return_logits=True)
-        elif hasattr(self.classifier, "predict_logits"):
+        if hasattr(self.classifier, "predict_logits"):
             logits = self.classifier.predict_logits(x_query)
+        elif hasattr(self.classifier, "_raw_predict"):
+            logits = self.classifier._raw_predict(x_query, return_logits=True)
         else:
             raise RuntimeError(
                 "Paper-faithful TabPFGen requires a TabPFNClassifier with "
