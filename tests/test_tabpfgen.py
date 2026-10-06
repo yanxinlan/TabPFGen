@@ -129,6 +129,29 @@ class TestTabPFGenPaperAlgorithm(unittest.TestCase):
         self.assertEqual(adapter.classifier.used, "predict_logits")
         torch.testing.assert_close(logits, torch.ones((3, 2)))
 
+    def test_tabpfn_adapter_falls_back_when_predict_logits_detaches(self):
+        class Classifier:
+            def __init__(self):
+                self.used = []
+
+            def predict_logits(self, x):
+                self.used.append("predict_logits")
+                return torch.ones((x.shape[0], 2), device=x.device).detach()
+
+            def _raw_predict(self, x, return_logits=False):
+                del return_logits
+                self.used.append("_raw_predict")
+                return x[:, :1].repeat(1, 2)
+
+        adapter = object.__new__(_TabPFNLogitEnergy)
+        adapter.classifier = Classifier()
+        x = torch.zeros((3, 2), requires_grad=True)
+
+        logits = adapter.logits(x)
+
+        self.assertEqual(adapter.classifier.used, ["predict_logits", "_raw_predict"])
+        self.assertTrue(logits.requires_grad)
+
 
 if __name__ == "__main__":
     unittest.main()

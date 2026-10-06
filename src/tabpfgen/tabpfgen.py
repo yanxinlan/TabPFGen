@@ -64,27 +64,42 @@ class _TabPFNLogitEnergy:
         else:
             self.classifier.fit(x_train, y_train)
 
+    def _coerce_logits(self, logits: object, x_query: torch.Tensor) -> torch.Tensor:
+        if not isinstance(logits, torch.Tensor):
+            logits = torch.as_tensor(logits, device=x_query.device, dtype=x_query.dtype)
+        return logits.to(device=x_query.device, dtype=x_query.dtype)
+
+    def _logits_are_differentiable(
+        self, logits: torch.Tensor, x_query: torch.Tensor
+    ) -> bool:
+        return (not x_query.requires_grad) or logits.requires_grad
+
     def logits(self, x_query: torch.Tensor) -> torch.Tensor:
+        candidates = []
         if hasattr(self.classifier, "predict_logits"):
-            logits = self.classifier.predict_logits(x_query)
-        elif hasattr(self.classifier, "_raw_predict"):
-            logits = self.classifier._raw_predict(x_query, return_logits=True)
-        else:
+            candidates.append(lambda: self.classifier.predict_logits(x_query))
+        if hasattr(self.classifier, "_raw_predict"):
+            candidates.append(
+                lambda: self.classifier._raw_predict(x_query, return_logits=True)
+            )
+        if not candidates:
             raise RuntimeError(
                 "Paper-faithful TabPFGen requires a TabPFNClassifier with "
                 "differentiable raw-logit support."
             )
-        if not isinstance(logits, torch.Tensor):
-            logits = torch.as_tensor(logits, device=x_query.device, dtype=x_query.dtype)
 
-        if x_query.requires_grad and not logits.requires_grad:
-            raise RuntimeError(
-                "TabPFN logits are detached from x_synth. Install/use a TabPFN "
-                "version that supports differentiable_input=True; otherwise SGLD "
-                "cannot backpropagate the paper's energy."
-            )
+        for get_logits in candidates:
+            logits = self._coerce_logits(get_logits(), x_query)
+            if self._logits_are_differentiable(logits, x_query):
+                return logits
 
-        return logits.to(device=x_query.device, dtype=x_query.dtype)
+        raise RuntimeError(
+            "TabPFN raw logits are detached from x_synth. The sampler tried "
+            "predict_logits() and _raw_predict(..., return_logits=True), but "
+            "neither returned differentiable logits. Install/use a TabPFN version "
+            "that supports differentiable_input=True; otherwise SGLD cannot "
+            "backpropagate the paper's energy."
+        )
 
 
 class TabPFGen:
