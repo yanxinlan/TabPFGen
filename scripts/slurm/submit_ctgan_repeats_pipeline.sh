@@ -1,0 +1,55 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${REPO_ROOT:-$(cd -- "${SCRIPT_DIR}/../.." && pwd)}"
+LOG_ROOT="${LOG_ROOT:-$(cd -- "${REPO_ROOT}/.." && pwd)/logs}"
+OVERWRITE_FLAG="${OVERWRITE_FLAG:-}"
+
+mkdir -p "${LOG_ROOT}/ctgan_repeats_generate" "${LOG_ROOT}/ctgan_repeats_evaluate" "${LOG_ROOT}/ctgan_repeats_summary"
+
+cd "${REPO_ROOT}"
+
+GEN_JOB_ID=$(
+  sbatch \
+    --parsable \
+    --export=ALL,REPO_ROOT="${REPO_ROOT}",OVERWRITE_FLAG="${OVERWRITE_FLAG}" \
+    scripts/slurm/run_ctgan_repeats_generate_gpu_array.sh
+)
+echo "Submitted CTGAN repeat generation array: ${GEN_JOB_ID}"
+
+TOTAL_EVAL_TASKS=4320
+MAX_ARRAY_TASKS=1000
+EVAL_JOB_IDS=()
+offset=0
+while (( offset < TOTAL_EVAL_TASKS )); do
+  remaining=$((TOTAL_EVAL_TASKS - offset))
+  chunk_size=${MAX_ARRAY_TASKS}
+  if (( remaining < chunk_size )); then
+    chunk_size=${remaining}
+  fi
+  array_end=$((chunk_size - 1))
+  eval_job_id=$(
+    sbatch \
+      --parsable \
+      --dependency=afterok:${GEN_JOB_ID} \
+      --array=0-${array_end}%120 \
+      --export=ALL,REPO_ROOT="${REPO_ROOT}",TASK_OFFSET=${offset},OVERWRITE_FLAG="${OVERWRITE_FLAG}" \
+      scripts/slurm/run_ctgan_repeats_evaluate_gpu_array.sh
+  )
+  EVAL_JOB_IDS+=("${eval_job_id}")
+  echo "Submitted CTGAN repeat evaluation chunk offset=${offset} size=${chunk_size}: ${eval_job_id}"
+  offset=$((offset + chunk_size))
+done
+
+echo "Evaluation chunks: ${EVAL_JOB_IDS[*]}"
+
+EVAL_DEPENDENCY=$(IFS=:; echo "${EVAL_JOB_IDS[*]}")
+SUMMARY_JOB_ID=$(
+  sbatch \
+    --parsable \
+    --dependency=afterok:${EVAL_DEPENDENCY} \
+    --export=ALL,REPO_ROOT="${REPO_ROOT}" \
+    scripts/slurm/run_ctgan_repeats_summarize.sh
+)
+echo "Submitted CTGAN repeat summary job: ${SUMMARY_JOB_ID}"

@@ -261,8 +261,14 @@ class TabPFGen:
         x_synth = x_synth.detach().clone().requires_grad_(True)
         energy = self._compute_energy(x_synth, y_synth, x_train, y_train)
         grad = torch.autograd.grad(energy.sum(), x_synth)[0]
+        if not torch.isfinite(energy).all():
+            raise FloatingPointError("TabPFGen energy became non-finite during SGLD")
+        if not torch.isfinite(grad).all():
+            raise FloatingPointError("TabPFGen gradient became non-finite during SGLD")
         noise = torch.randn_like(x_synth) * self.sgld_noise_scale
         x_next = x_synth - self.sgld_step_size * grad + noise
+        if not torch.isfinite(x_next).all():
+            raise FloatingPointError("TabPFGen sample became non-finite during SGLD")
         return x_next.detach(), energy.detach()
 
     def _init_from_training_rows(
@@ -336,6 +342,8 @@ class TabPFGen:
         for step in range(self.n_sgld_steps):
             x_synth, energy = self._sgld_step(x_synth, y_synth_t, x_train, y_train)
             mean_energy = float(energy.mean().item())
+            if not np.isfinite(mean_energy):
+                raise FloatingPointError("TabPFGen mean energy became non-finite")
             mean_energy_history.append(mean_energy)
 
             if mean_energy < best_energy:
@@ -382,6 +390,10 @@ class TabPFGen:
             X_synth = self.scaler.inverse_transform(X_synth_model)
         else:
             X_synth = X_synth_model
+        if not np.isfinite(X_synth).all():
+            raise FloatingPointError(
+                "TabPFGen produced non-finite synthetic features after inverse scaling"
+            )
         y_synth_out = self.label_encoder.inverse_transform(
             y_synth_t.detach().cpu().numpy()
         )

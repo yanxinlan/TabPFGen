@@ -303,7 +303,7 @@ def train_tabpfgen_generator(
     step_size: float,
     noise_scale: float,
     init_noise_std: float,
-) -> tuple[None, pd.DataFrame]:
+) -> tuple[None, pd.DataFrame, dict[str, Any]]:
     from tabpfgen import TabPFGen
 
     X = train_df.drop(columns=["target"]).to_numpy(dtype=np.float32)
@@ -311,24 +311,60 @@ def train_tabpfgen_generator(
     rng = np.random.default_rng(seed)
     y_synth = rng.choice(y, size=len(y), replace=True)
 
-    generator = TabPFGen(
-        n_sgld_steps=n_steps,
-        sgld_step_size=step_size,
-        sgld_noise_scale=noise_scale,
-        init_noise_std=init_noise_std,
-        device=device,
-        random_state=seed,
-    )
-    X_synth, y_synth = generator.generate_classification(
-        X,
-        y,
-        n_samples=len(train_df),
-        balance_classes=False,
-        y_synth=y_synth,
-    )
+    attempts = [
+        {
+            "n_sgld_steps": n_steps,
+            "sgld_step_size": step_size,
+            "sgld_noise_scale": noise_scale,
+            "init_noise_std": init_noise_std,
+        },
+        {
+            "n_sgld_steps": n_steps,
+            "sgld_step_size": step_size * 0.5,
+            "sgld_noise_scale": noise_scale * 0.5,
+            "init_noise_std": init_noise_std,
+        },
+        {
+            "n_sgld_steps": n_steps,
+            "sgld_step_size": step_size * 0.1,
+            "sgld_noise_scale": noise_scale * 0.1,
+            "init_noise_std": init_noise_std,
+        },
+    ]
+    errors: list[str] = []
+    for attempt_idx, params in enumerate(attempts, start=1):
+        try:
+            generator = TabPFGen(
+                **params,
+                device=device,
+                random_state=seed,
+            )
+            X_synth, y_synth_out = generator.generate_classification(
+                X,
+                y,
+                n_samples=len(train_df),
+                balance_classes=False,
+                y_synth=y_synth,
+            )
+            if not np.isfinite(X_synth).all():
+                raise FloatingPointError("TabPFGen returned non-finite synthetic features")
+            metadata = {
+                **params,
+                "attempt": attempt_idx,
+                "retry_errors": errors,
+                "fallback_used": attempt_idx > 1,
+            }
+            break
+        except FloatingPointError as exc:
+            errors.append(f"attempt {attempt_idx}: {exc}")
+    else:
+        raise FloatingPointError(
+            "TabPFGen failed all numerical-stability attempts: " + " | ".join(errors)
+        )
+
     synthetic = pd.DataFrame(X_synth, columns=train_df.drop(columns=["target"]).columns)
-    synthetic["target"] = y_synth
-    return None, synthetic.reset_index(drop=True)
+    synthetic["target"] = y_synth_out
+    return None, synthetic.reset_index(drop=True), metadata
 
 
 def save_generator(generator: Any, out_dir: Path) -> str | None:
@@ -369,7 +405,7 @@ def main() -> None:
         generator, synthetic = train_smote(train_df, args.seed)
         resolved_name = "smote"
     elif args.generator == "tabpfgen":
-        generator, synthetic = train_tabpfgen_generator(
+        generator, synthetic, tabpfgen_metadata = train_tabpfgen_generator(
             train_df,
             args.seed,
             args.device,
@@ -394,12 +430,7 @@ def main() -> None:
     synthetic.to_csv(synthetic_path, index=False)
 
     if args.generator == "tabpfgen":
-        hyperparameters = {
-            "n_sgld_steps": args.tabpfgen_steps,
-            "sgld_step_size": args.tabpfgen_step_size,
-            "sgld_noise_scale": args.tabpfgen_noise_scale,
-            "init_noise_std": args.tabpfgen_init_noise_std,
-        }
+        hyperparameters = tabpfgen_metadata
     elif args.generator == "smote":
         hyperparameters = {}
     else:

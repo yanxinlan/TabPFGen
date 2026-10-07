@@ -155,8 +155,12 @@ def summarize_table1(metrics: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]
     if metrics.empty:
         return pd.DataFrame(), pd.DataFrame()
 
+    metrics_for_table = metrics.copy()
+    metrics_for_table.loc[
+        metrics_for_table["generator"] == "original", "mode"
+    ] = "augmentation"
     grouped = (
-        metrics.groupby(["mode", "downstream_model", "generator"], as_index=False)
+        metrics_for_table.groupby(["mode", "downstream_model", "generator"], as_index=False)
         .agg(
             reproduced_auc_mean=("auc", "mean"),
             reproduced_auc_std=("auc", "std"),
@@ -301,6 +305,9 @@ def diagnostic_one(base: Path, dataset_id: int, seed: int, generator: str, skip_
         **privacy,
     }
     row["c2st_auc"] = np.nan if skip_c2st else c2st_auc(real_x, synth_x, seed)
+    row["c2st_detectability"] = (
+        np.nan if pd.isna(row["c2st_auc"]) else max(row["c2st_auc"], 1.0 - row["c2st_auc"])
+    )
     return row
 
 
@@ -339,6 +346,7 @@ def summarize_diagnostics(diagnostics: pd.DataFrame) -> pd.DataFrame:
         "nn_distance_p01",
         "exact_duplicate_fraction",
         "c2st_auc",
+        "c2st_detectability",
     ]
     summary = (
         diagnostics.groupby("generator", as_index=False)[numeric_cols]
