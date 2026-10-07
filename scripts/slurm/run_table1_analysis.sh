@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=tabpfgen_t1_analysis
+#SBATCH --partition=rome
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
