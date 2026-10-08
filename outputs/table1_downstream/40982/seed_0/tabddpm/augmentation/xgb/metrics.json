@@ -1,0 +1,21 @@
+{
+  "dataset_id": 40982,
+  "seed": 0,
+  "generator": "tabddpm",
+  "mode": "augmentation",
+  "downstream_model": "xgb",
+  "auc": 0.9574482250629394,
+  "n_train_real": 970,
+  "n_train_used": 1940,
+  "n_test": 971,
+  "classes": [
+    "Bumps",
+    "Dirtiness",
+    "K_Scratch",
+    "Other_Faults",
+    "Pastry",
+    "Stains",
+    "Z_Scratch"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/40982/seed_0/tabddpm/augmentation/xgb/metrics.json"
+}

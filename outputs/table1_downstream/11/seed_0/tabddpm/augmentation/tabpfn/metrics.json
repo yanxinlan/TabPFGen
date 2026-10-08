@@ -1,0 +1,17 @@
+{
+  "dataset_id": 11,
+  "seed": 0,
+  "generator": "tabddpm",
+  "mode": "augmentation",
+  "downstream_model": "tabpfn",
+  "auc": 0.9750362973920668,
+  "n_train_real": 312,
+  "n_train_used": 624,
+  "n_test": 313,
+  "classes": [
+    "B",
+    "L",
+    "R"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/11/seed_0/tabddpm/augmentation/tabpfn/metrics.json"
+}

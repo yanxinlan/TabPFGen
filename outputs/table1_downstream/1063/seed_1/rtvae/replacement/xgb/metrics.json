@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1063,
+  "seed": 1,
+  "generator": "rtvae",
+  "mode": "replacement",
+  "downstream_model": "xgb",
+  "auc": 0.614689568795849,
+  "n_train_real": 261,
+  "n_train_used": 261,
+  "n_test": 261,
+  "classes": [
+    "no",
+    "yes"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1063/seed_1/rtvae/replacement/xgb/metrics.json"
+}

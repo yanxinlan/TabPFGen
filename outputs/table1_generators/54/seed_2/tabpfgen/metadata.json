@@ -1,0 +1,36 @@
+{
+  "dataset_id": 54,
+  "generator": "tabpfgen",
+  "resolved_generator": "tabpfgen",
+  "seed": 2,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 423,
+  "n_test": 423,
+  "n_synthetic": 423,
+  "target_counts_train": {
+    "bus": 109,
+    "saab": 108,
+    "opel": 106,
+    "van": 100
+  },
+  "target_counts_synthetic": {
+    "bus": 108,
+    "van": 107,
+    "opel": 106,
+    "saab": 102
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/54/seed_2/tabpfgen/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/54/seed_2/tabpfgen/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/54/seed_2/tabpfgen/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {
+    "n_sgld_steps": 1000,
+    "sgld_step_size": 0.01,
+    "sgld_noise_scale": 0.01,
+    "init_noise_std": 0.01
+  }
+}

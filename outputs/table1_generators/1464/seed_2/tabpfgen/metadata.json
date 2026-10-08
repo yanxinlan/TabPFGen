@@ -1,0 +1,32 @@
+{
+  "dataset_id": 1464,
+  "generator": "tabpfgen",
+  "resolved_generator": "tabpfgen",
+  "seed": 2,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 374,
+  "n_test": 374,
+  "n_synthetic": 374,
+  "target_counts_train": {
+    "1": 285,
+    "2": 89
+  },
+  "target_counts_synthetic": {
+    "1": 282,
+    "2": 92
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1464/seed_2/tabpfgen/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1464/seed_2/tabpfgen/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1464/seed_2/tabpfgen/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {
+    "n_sgld_steps": 1000,
+    "sgld_step_size": 0.01,
+    "sgld_noise_scale": 0.01,
+    "init_noise_std": 0.01
+  }
+}

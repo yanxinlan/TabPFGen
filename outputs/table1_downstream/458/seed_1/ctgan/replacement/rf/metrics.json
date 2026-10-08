@@ -1,0 +1,18 @@
+{
+  "dataset_id": 458,
+  "seed": 1,
+  "generator": "ctgan",
+  "mode": "replacement",
+  "downstream_model": "rf",
+  "auc": 0.5561119120900845,
+  "n_train_real": 420,
+  "n_train_used": 420,
+  "n_test": 421,
+  "classes": [
+    "Austen",
+    "London",
+    "Milton",
+    "Shakespeare"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/458/seed_1/ctgan/replacement/rf/metrics.json"
+}

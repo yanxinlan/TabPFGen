@@ -1,0 +1,18 @@
+{
+  "dataset_id": 54,
+  "seed": 0,
+  "generator": "rtvae",
+  "mode": "replacement",
+  "downstream_model": "rf",
+  "auc": 0.7713426607077758,
+  "n_train_real": 423,
+  "n_train_used": 423,
+  "n_test": 423,
+  "classes": [
+    "bus",
+    "opel",
+    "saab",
+    "van"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/54/seed_0/rtvae/replacement/rf/metrics.json"
+}

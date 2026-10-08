@@ -1,0 +1,18 @@
+{
+  "dataset_id": 458,
+  "seed": 2,
+  "generator": "rtvae",
+  "mode": "replacement",
+  "downstream_model": "lr",
+  "auc": 0.9835349672684648,
+  "n_train_real": 420,
+  "n_train_used": 420,
+  "n_test": 421,
+  "classes": [
+    "Austen",
+    "London",
+    "Milton",
+    "Shakespeare"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/458/seed_2/rtvae/replacement/lr/metrics.json"
+}

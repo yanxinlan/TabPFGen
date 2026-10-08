@@ -1,0 +1,57 @@
+{
+  "dataset_id": 22,
+  "generator": "tabddpm",
+  "resolved_generator": "ddpm",
+  "seed": 0,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 1000,
+  "n_test": 1000,
+  "n_synthetic": 1000,
+  "target_counts_train": {
+    "4": 100,
+    "2": 100,
+    "7": 100,
+    "8": 100,
+    "3": 100,
+    "9": 100,
+    "5": 100,
+    "1": 100,
+    "6": 100,
+    "10": 100
+  },
+  "target_counts_synthetic": {
+    "10": 112,
+    "7": 111,
+    "4": 110,
+    "5": 105,
+    "2": 104,
+    "3": 97,
+    "9": 95,
+    "8": 92,
+    "6": 88,
+    "1": 86
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/22/seed_0/tabddpm/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/22/seed_0/tabddpm/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/22/seed_0/tabddpm/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {
+    "is_classification": true,
+    "lr": 0.002,
+    "weight_decay": 0.0001,
+    "batch_size": 1024,
+    "gaussian_loss_type": "mse",
+    "scheduler": "cosine",
+    "model_type": "mlp",
+    "dim_embed": 128,
+    "continuous_encoder": "quantile",
+    "sampling_patience": 500,
+    "n_iter": 1000,
+    "random_state": 0,
+    "device": "cuda"
+  }
+}

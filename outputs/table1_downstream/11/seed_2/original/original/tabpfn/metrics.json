@@ -1,0 +1,17 @@
+{
+  "dataset_id": 11,
+  "seed": 2,
+  "generator": "original",
+  "mode": "original",
+  "downstream_model": "tabpfn",
+  "auc": 0.9915754437869824,
+  "n_train_real": 312,
+  "n_train_used": 312,
+  "n_test": 313,
+  "classes": [
+    "B",
+    "L",
+    "R"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/11/seed_2/original/original/tabpfn/metrics.json"
+}

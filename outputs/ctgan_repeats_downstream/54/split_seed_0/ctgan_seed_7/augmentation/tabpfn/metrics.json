@@ -1,0 +1,19 @@
+{
+  "dataset_id": 54,
+  "split_seed": 0,
+  "ctgan_seed": 7,
+  "generator": "ctgan",
+  "mode": "augmentation",
+  "downstream_model": "tabpfn",
+  "auc": 0.9612669196596558,
+  "n_train_real": 423,
+  "n_train_used": 846,
+  "n_test": 423,
+  "classes": [
+    "bus",
+    "opel",
+    "saab",
+    "van"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/ctgan_repeats_downstream/54/split_seed_0/ctgan_seed_7/augmentation/tabpfn/metrics.json"
+}

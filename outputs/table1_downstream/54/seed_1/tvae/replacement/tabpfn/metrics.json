@@ -1,0 +1,18 @@
+{
+  "dataset_id": 54,
+  "seed": 1,
+  "generator": "tvae",
+  "mode": "replacement",
+  "downstream_model": "tabpfn",
+  "auc": 0.8684084914463198,
+  "n_train_real": 423,
+  "n_train_used": 423,
+  "n_test": 423,
+  "classes": [
+    "bus",
+    "opel",
+    "saab",
+    "van"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/54/seed_1/tvae/replacement/tabpfn/metrics.json"
+}

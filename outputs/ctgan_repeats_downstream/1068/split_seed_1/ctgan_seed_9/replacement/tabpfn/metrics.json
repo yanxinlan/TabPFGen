@@ -1,0 +1,17 @@
+{
+  "dataset_id": 1068,
+  "split_seed": 1,
+  "ctgan_seed": 9,
+  "generator": "ctgan",
+  "mode": "replacement",
+  "downstream_model": "tabpfn",
+  "auc": 0.7141969787318625,
+  "n_train_real": 554,
+  "n_train_used": 554,
+  "n_test": 555,
+  "classes": [
+    "False",
+    "True"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/ctgan_repeats_downstream/1068/split_seed_1/ctgan_seed_9/replacement/tabpfn/metrics.json"
+}

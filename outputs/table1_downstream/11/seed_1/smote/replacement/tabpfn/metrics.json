@@ -1,0 +1,17 @@
+{
+  "dataset_id": 11,
+  "seed": 1,
+  "generator": "smote",
+  "mode": "replacement",
+  "downstream_model": "tabpfn",
+  "auc": 0.9862680802103879,
+  "n_train_real": 312,
+  "n_train_used": 312,
+  "n_test": 313,
+  "classes": [
+    "B",
+    "L",
+    "R"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/11/seed_1/smote/replacement/tabpfn/metrics.json"
+}

@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1510,
+  "seed": 1,
+  "generator": "tabddpm",
+  "mode": "augmentation",
+  "downstream_model": "rf",
+  "auc": 0.9906714451354486,
+  "n_train_real": 284,
+  "n_train_used": 568,
+  "n_test": 285,
+  "classes": [
+    "1",
+    "2"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1510/seed_1/tabddpm/augmentation/rf/metrics.json"
+}

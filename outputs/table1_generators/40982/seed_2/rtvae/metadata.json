@@ -1,0 +1,56 @@
+{
+  "dataset_id": 40982,
+  "generator": "rtvae",
+  "resolved_generator": "rtvae",
+  "seed": 2,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 970,
+  "n_test": 971,
+  "n_synthetic": 970,
+  "target_counts_train": {
+    "Other_Faults": 336,
+    "Bumps": 201,
+    "K_Scratch": 195,
+    "Z_Scratch": 95,
+    "Pastry": 79,
+    "Stains": 36,
+    "Dirtiness": 28
+  },
+  "target_counts_synthetic": {
+    "Other_Faults": 439,
+    "Bumps": 167,
+    "K_Scratch": 156,
+    "Pastry": 89,
+    "Z_Scratch": 68,
+    "Stains": 35,
+    "Dirtiness": 16
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/40982/seed_2/rtvae/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/40982/seed_2/rtvae/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/40982/seed_2/rtvae/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {
+    "n_units_embedding": 500,
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "batch_size": 200,
+    "decoder_n_layers_hidden": 3,
+    "decoder_n_units_hidden": 500,
+    "decoder_nonlin": "leaky_relu",
+    "decoder_dropout": 0,
+    "encoder_n_layers_hidden": 3,
+    "encoder_n_units_hidden": 500,
+    "encoder_nonlin": "leaky_relu",
+    "encoder_dropout": 0.1,
+    "data_encoder_max_clusters": 10,
+    "robust_divergence_beta": 2,
+    "sampling_patience": 500,
+    "n_iter": 1000,
+    "random_state": 2,
+    "device": "cuda"
+  }
+}

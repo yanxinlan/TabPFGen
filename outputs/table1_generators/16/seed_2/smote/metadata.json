@@ -1,0 +1,43 @@
+{
+  "dataset_id": 16,
+  "generator": "smote",
+  "resolved_generator": "smote",
+  "seed": 2,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 1000,
+  "n_test": 1000,
+  "n_synthetic": 1000,
+  "target_counts_train": {
+    "10": 100,
+    "9": 100,
+    "2": 100,
+    "8": 100,
+    "4": 100,
+    "1": 100,
+    "7": 100,
+    "6": 100,
+    "5": 100,
+    "3": 100
+  },
+  "target_counts_synthetic": {
+    "7": 100,
+    "10": 100,
+    "8": 100,
+    "2": 100,
+    "5": 100,
+    "1": 100,
+    "9": 100,
+    "6": 100,
+    "4": 100,
+    "3": 100
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/16/seed_2/smote/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/16/seed_2/smote/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/16/seed_2/smote/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {}
+}

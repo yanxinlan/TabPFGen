@@ -1,0 +1,41 @@
+{
+  "dataset_id": 1494,
+  "generator": "tabddpm",
+  "resolved_generator": "ddpm",
+  "seed": 2,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 527,
+  "n_test": 528,
+  "n_synthetic": 527,
+  "target_counts_train": {
+    "1": 349,
+    "2": 178
+  },
+  "target_counts_synthetic": {
+    "1": 363,
+    "2": 164
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1494/seed_2/tabddpm/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1494/seed_2/tabddpm/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1494/seed_2/tabddpm/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {
+    "is_classification": true,
+    "lr": 0.002,
+    "weight_decay": 0.0001,
+    "batch_size": 1024,
+    "gaussian_loss_type": "mse",
+    "scheduler": "cosine",
+    "model_type": "mlp",
+    "dim_embed": 128,
+    "continuous_encoder": "quantile",
+    "sampling_patience": 500,
+    "n_iter": 1000,
+    "random_state": 2,
+    "device": "cuda"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "dataset_id": 1063,
+  "split_seed": 1,
+  "ctgan_seed": 4,
+  "generator": "ctgan",
+  "mode": "replacement",
+  "downstream_model": "rf",
+  "auc": 0.6895240651279299,
+  "n_train_real": 261,
+  "n_train_used": 261,
+  "n_test": 261,
+  "classes": [
+    "no",
+    "yes"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/ctgan_repeats_downstream/1063/split_seed_1/ctgan_seed_4/replacement/rf/metrics.json"
+}

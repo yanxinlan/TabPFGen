@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1464,
+  "seed": 0,
+  "generator": "nflow",
+  "mode": "augmentation",
+  "downstream_model": "lr",
+  "auc": 0.7300019712201853,
+  "n_train_real": 374,
+  "n_train_used": 748,
+  "n_test": 374,
+  "classes": [
+    "1",
+    "2"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1464/seed_0/nflow/augmentation/lr/metrics.json"
+}

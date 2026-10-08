@@ -1,0 +1,18 @@
+{
+  "dataset_id": 458,
+  "seed": 2,
+  "generator": "original",
+  "mode": "original",
+  "downstream_model": "tabpfn",
+  "auc": 1.0,
+  "n_train_real": 420,
+  "n_train_used": 420,
+  "n_test": 421,
+  "classes": [
+    "Austen",
+    "London",
+    "Milton",
+    "Shakespeare"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/458/seed_2/original/original/tabpfn/metrics.json"
+}

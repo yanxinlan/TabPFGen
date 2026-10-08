@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1494,
+  "seed": 2,
+  "generator": "smote",
+  "mode": "augmentation",
+  "downstream_model": "rf",
+  "auc": 0.9183226324237561,
+  "n_train_real": 527,
+  "n_train_used": 1054,
+  "n_test": 528,
+  "classes": [
+    "1",
+    "2"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1494/seed_2/smote/augmentation/rf/metrics.json"
+}

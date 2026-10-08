@@ -1,0 +1,18 @@
+{
+  "dataset_id": 54,
+  "seed": 2,
+  "generator": "original",
+  "mode": "original",
+  "downstream_model": "rf",
+  "auc": 0.9228821812721508,
+  "n_train_real": 423,
+  "n_train_used": 423,
+  "n_test": 423,
+  "classes": [
+    "bus",
+    "opel",
+    "saab",
+    "van"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/54/seed_2/original/original/rf/metrics.json"
+}

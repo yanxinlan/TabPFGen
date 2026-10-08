@@ -1,0 +1,18 @@
+{
+  "dataset_id": 54,
+  "seed": 1,
+  "generator": "smote",
+  "mode": "replacement",
+  "downstream_model": "xgb",
+  "auc": 0.9119882437188647,
+  "n_train_real": 423,
+  "n_train_used": 423,
+  "n_test": 423,
+  "classes": [
+    "bus",
+    "opel",
+    "saab",
+    "van"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/54/seed_1/smote/replacement/xgb/metrics.json"
+}

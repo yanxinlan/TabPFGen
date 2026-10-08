@@ -1,0 +1,21 @@
+{
+  "dataset_id": 40982,
+  "seed": 2,
+  "generator": "tvae",
+  "mode": "augmentation",
+  "downstream_model": "tabpfn",
+  "auc": 0.967204732119424,
+  "n_train_real": 970,
+  "n_train_used": 1940,
+  "n_test": 971,
+  "classes": [
+    "Bumps",
+    "Dirtiness",
+    "K_Scratch",
+    "Other_Faults",
+    "Pastry",
+    "Stains",
+    "Z_Scratch"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/40982/seed_2/tvae/augmentation/tabpfn/metrics.json"
+}

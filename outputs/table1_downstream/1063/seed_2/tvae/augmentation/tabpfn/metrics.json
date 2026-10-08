@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1063,
+  "seed": 2,
+  "generator": "tvae",
+  "mode": "augmentation",
+  "downstream_model": "tabpfn",
+  "auc": 0.8757256894049346,
+  "n_train_real": 261,
+  "n_train_used": 522,
+  "n_test": 261,
+  "classes": [
+    "no",
+    "yes"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1063/seed_2/tvae/augmentation/tabpfn/metrics.json"
+}

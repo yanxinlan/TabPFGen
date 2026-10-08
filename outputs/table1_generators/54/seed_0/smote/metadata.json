@@ -1,0 +1,31 @@
+{
+  "dataset_id": 54,
+  "generator": "smote",
+  "resolved_generator": "smote",
+  "seed": 0,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 423,
+  "n_test": 423,
+  "n_synthetic": 423,
+  "target_counts_train": {
+    "bus": 109,
+    "saab": 108,
+    "opel": 106,
+    "van": 100
+  },
+  "target_counts_synthetic": {
+    "bus": 109,
+    "saab": 108,
+    "opel": 106,
+    "van": 100
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/54/seed_0/smote/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/54/seed_0/smote/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/54/seed_0/smote/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {}
+}

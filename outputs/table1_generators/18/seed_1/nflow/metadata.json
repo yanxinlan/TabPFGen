@@ -1,0 +1,63 @@
+{
+  "dataset_id": 18,
+  "generator": "nflow",
+  "resolved_generator": "nflow",
+  "seed": 1,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 1000,
+  "n_test": 1000,
+  "n_synthetic": 1000,
+  "target_counts_train": {
+    "6": 100,
+    "7": 100,
+    "3": 100,
+    "5": 100,
+    "2": 100,
+    "1": 100,
+    "10": 100,
+    "8": 100,
+    "9": 100,
+    "4": 100
+  },
+  "target_counts_synthetic": {
+    "4": 147,
+    "3": 130,
+    "7": 112,
+    "6": 111,
+    "10": 107,
+    "9": 101,
+    "8": 96,
+    "2": 88,
+    "1": 72,
+    "5": 36
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/18/seed_1/nflow/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/18/seed_1/nflow/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/18/seed_1/nflow/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {
+    "n_layers_hidden": 2,
+    "n_units_hidden": 256,
+    "batch_size": 1000,
+    "num_transform_blocks": 1,
+    "dropout": 0.1,
+    "batch_norm": false,
+    "num_bins": 8,
+    "tail_bound": 3,
+    "lr": 0.0005,
+    "apply_unconditional_transform": true,
+    "base_distribution": "standard_normal",
+    "linear_transform_type": "permutation",
+    "base_transform_type": "rq-autoregressive",
+    "encoder_max_clusters": 10,
+    "n_iter_min": 100,
+    "sampling_patience": 500,
+    "n_iter": 1000,
+    "random_state": 1,
+    "device": "cuda"
+  }
+}

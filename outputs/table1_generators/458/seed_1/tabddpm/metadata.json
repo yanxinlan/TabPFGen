@@ -1,0 +1,45 @@
+{
+  "dataset_id": 458,
+  "generator": "tabddpm",
+  "resolved_generator": "ddpm",
+  "seed": 1,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 420,
+  "n_test": 421,
+  "n_synthetic": 420,
+  "target_counts_train": {
+    "Austen": 158,
+    "London": 148,
+    "Shakespeare": 86,
+    "Milton": 28
+  },
+  "target_counts_synthetic": {
+    "Austen": 149,
+    "London": 147,
+    "Shakespeare": 96,
+    "Milton": 28
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/458/seed_1/tabddpm/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/458/seed_1/tabddpm/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/458/seed_1/tabddpm/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {
+    "is_classification": true,
+    "lr": 0.002,
+    "weight_decay": 0.0001,
+    "batch_size": 1024,
+    "gaussian_loss_type": "mse",
+    "scheduler": "cosine",
+    "model_type": "mlp",
+    "dim_embed": 128,
+    "continuous_encoder": "quantile",
+    "sampling_patience": 500,
+    "n_iter": 1000,
+    "random_state": 1,
+    "device": "cuda"
+  }
+}

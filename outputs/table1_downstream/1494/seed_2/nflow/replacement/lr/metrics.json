@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1494,
+  "seed": 2,
+  "generator": "nflow",
+  "mode": "replacement",
+  "downstream_model": "lr",
+  "auc": 0.8223113964686998,
+  "n_train_real": 527,
+  "n_train_used": 527,
+  "n_test": 528,
+  "classes": [
+    "1",
+    "2"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1494/seed_2/nflow/replacement/lr/metrics.json"
+}

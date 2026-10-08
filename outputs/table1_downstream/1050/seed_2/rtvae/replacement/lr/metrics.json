@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1050,
+  "seed": 2,
+  "generator": "rtvae",
+  "mode": "replacement",
+  "downstream_model": "lr",
+  "auc": 0.7944711538461539,
+  "n_train_real": 781,
+  "n_train_used": 781,
+  "n_test": 782,
+  "classes": [
+    "False",
+    "True"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1050/seed_2/rtvae/replacement/lr/metrics.json"
+}

@@ -1,0 +1,18 @@
+{
+  "dataset_id": 54,
+  "seed": 2,
+  "generator": "nflow",
+  "mode": "augmentation",
+  "downstream_model": "tabpfn",
+  "auc": 0.9675285933492687,
+  "n_train_real": 423,
+  "n_train_used": 846,
+  "n_test": 423,
+  "classes": [
+    "bus",
+    "opel",
+    "saab",
+    "van"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/54/seed_2/nflow/augmentation/tabpfn/metrics.json"
+}

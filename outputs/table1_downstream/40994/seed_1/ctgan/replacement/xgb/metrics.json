@@ -1,0 +1,16 @@
+{
+  "dataset_id": 40994,
+  "seed": 1,
+  "generator": "ctgan",
+  "mode": "replacement",
+  "downstream_model": "xgb",
+  "auc": 0.508537229361028,
+  "n_train_real": 270,
+  "n_train_used": 270,
+  "n_test": 270,
+  "classes": [
+    "0",
+    "1"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/40994/seed_1/ctgan/replacement/xgb/metrics.json"
+}

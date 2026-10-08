@@ -1,0 +1,21 @@
+{
+  "dataset_id": 40982,
+  "seed": 0,
+  "generator": "smote",
+  "mode": "replacement",
+  "downstream_model": "rf",
+  "auc": 0.9500733502202144,
+  "n_train_real": 970,
+  "n_train_used": 970,
+  "n_test": 971,
+  "classes": [
+    "Bumps",
+    "Dirtiness",
+    "K_Scratch",
+    "Other_Faults",
+    "Pastry",
+    "Stains",
+    "Z_Scratch"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/40982/seed_0/smote/replacement/rf/metrics.json"
+}

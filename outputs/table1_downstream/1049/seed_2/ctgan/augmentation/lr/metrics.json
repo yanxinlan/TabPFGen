@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1049,
+  "seed": 2,
+  "generator": "ctgan",
+  "mode": "augmentation",
+  "downstream_model": "lr",
+  "auc": 0.8580056179775282,
+  "n_train_real": 729,
+  "n_train_used": 1458,
+  "n_test": 729,
+  "classes": [
+    "False",
+    "True"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1049/seed_2/ctgan/augmentation/lr/metrics.json"
+}

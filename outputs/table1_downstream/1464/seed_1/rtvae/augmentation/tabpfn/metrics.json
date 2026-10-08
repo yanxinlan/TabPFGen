@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1464,
+  "seed": 1,
+  "generator": "rtvae",
+  "mode": "augmentation",
+  "downstream_model": "tabpfn",
+  "auc": 0.7393258426966292,
+  "n_train_real": 374,
+  "n_train_used": 748,
+  "n_test": 374,
+  "classes": [
+    "1",
+    "2"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1464/seed_1/rtvae/augmentation/tabpfn/metrics.json"
+}

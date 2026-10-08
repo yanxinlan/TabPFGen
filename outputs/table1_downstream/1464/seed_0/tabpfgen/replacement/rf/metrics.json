@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1464,
+  "seed": 0,
+  "generator": "tabpfgen",
+  "mode": "replacement",
+  "downstream_model": "rf",
+  "auc": 0.6556475458308693,
+  "n_train_real": 374,
+  "n_train_used": 374,
+  "n_test": 374,
+  "classes": [
+    "1",
+    "2"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1464/seed_0/tabpfgen/replacement/rf/metrics.json"
+}

@@ -1,0 +1,18 @@
+{
+  "dataset_id": 458,
+  "seed": 0,
+  "generator": "nflow",
+  "mode": "augmentation",
+  "downstream_model": "tabpfn",
+  "auc": 0.99997524997525,
+  "n_train_real": 420,
+  "n_train_used": 840,
+  "n_test": 421,
+  "classes": [
+    "Austen",
+    "London",
+    "Milton",
+    "Shakespeare"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/458/seed_0/nflow/augmentation/tabpfn/metrics.json"
+}

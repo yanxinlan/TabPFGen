@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1050,
+  "seed": 2,
+  "generator": "tvae",
+  "mode": "augmentation",
+  "downstream_model": "xgb",
+  "auc": 0.818474002849003,
+  "n_train_real": 781,
+  "n_train_used": 1562,
+  "n_test": 782,
+  "classes": [
+    "False",
+    "True"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1050/seed_2/tvae/augmentation/xgb/metrics.json"
+}

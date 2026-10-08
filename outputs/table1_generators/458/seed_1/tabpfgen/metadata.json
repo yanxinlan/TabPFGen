@@ -1,0 +1,36 @@
+{
+  "dataset_id": 458,
+  "generator": "tabpfgen",
+  "resolved_generator": "tabpfgen",
+  "seed": 1,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 420,
+  "n_test": 421,
+  "n_synthetic": 420,
+  "target_counts_train": {
+    "Austen": 158,
+    "London": 148,
+    "Shakespeare": 86,
+    "Milton": 28
+  },
+  "target_counts_synthetic": {
+    "London": 158,
+    "Austen": 142,
+    "Shakespeare": 89,
+    "Milton": 31
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/458/seed_1/tabpfgen/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/458/seed_1/tabpfgen/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/458/seed_1/tabpfgen/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {
+    "n_sgld_steps": 1000,
+    "sgld_step_size": 0.01,
+    "sgld_noise_scale": 0.01,
+    "init_noise_std": 0.01
+  }
+}

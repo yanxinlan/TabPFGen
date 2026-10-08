@@ -1,0 +1,46 @@
+{
+  "dataset_id": 1068,
+  "generator": "rtvae",
+  "resolved_generator": "rtvae",
+  "seed": 2,
+  "test_size": 0.5,
+  "n_iter": 1000,
+  "device": "cuda",
+  "n_train": 554,
+  "n_test": 555,
+  "n_synthetic": 554,
+  "target_counts_train": {
+    "false": 516,
+    "true": 38
+  },
+  "target_counts_synthetic": {
+    "false": 551,
+    "true": 3
+  },
+  "paths": {
+    "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1068/seed_2/rtvae/train.csv",
+    "test": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1068/seed_2/rtvae/test.csv",
+    "synthetic": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1068/seed_2/rtvae/synthetic.csv",
+    "generator": null
+  },
+  "hyperparameters": {
+    "n_units_embedding": 500,
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "batch_size": 200,
+    "decoder_n_layers_hidden": 3,
+    "decoder_n_units_hidden": 500,
+    "decoder_nonlin": "leaky_relu",
+    "decoder_dropout": 0,
+    "encoder_n_layers_hidden": 3,
+    "encoder_n_units_hidden": 500,
+    "encoder_nonlin": "leaky_relu",
+    "encoder_dropout": 0.1,
+    "data_encoder_max_clusters": 10,
+    "robust_divergence_beta": 2,
+    "sampling_patience": 500,
+    "n_iter": 1000,
+    "random_state": 2,
+    "device": "cuda"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "dataset_id": 458,
+  "split_seed": 2,
+  "ctgan_seed": 2,
+  "generator": "ctgan",
+  "mode": "augmentation",
+  "downstream_model": "xgb",
+  "auc": 0.9987827171383783,
+  "n_train_real": 420,
+  "n_train_used": 840,
+  "n_test": 421,
+  "classes": [
+    "Austen",
+    "London",
+    "Milton",
+    "Shakespeare"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/ctgan_repeats_downstream/458/split_seed_2/ctgan_seed_2/augmentation/xgb/metrics.json"
+}

@@ -1,0 +1,22 @@
+{
+  "dataset_id": 40982,
+  "split_seed": 1,
+  "ctgan_seed": 2,
+  "generator": "ctgan",
+  "mode": "replacement",
+  "downstream_model": "xgb",
+  "auc": 0.5074795986810389,
+  "n_train_real": 970,
+  "n_train_used": 970,
+  "n_test": 971,
+  "classes": [
+    "Bumps",
+    "Dirtiness",
+    "K_Scratch",
+    "Other_Faults",
+    "Pastry",
+    "Stains",
+    "Z_Scratch"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/ctgan_repeats_downstream/40982/split_seed_1/ctgan_seed_2/replacement/xgb/metrics.json"
+}

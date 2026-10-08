@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1049,
+  "seed": 2,
+  "generator": "tabddpm",
+  "mode": "replacement",
+  "downstream_model": "rf",
+  "auc": 0.5512113764044944,
+  "n_train_real": 729,
+  "n_train_used": 729,
+  "n_test": 729,
+  "classes": [
+    "False",
+    "True"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1049/seed_2/tabddpm/replacement/rf/metrics.json"
+}

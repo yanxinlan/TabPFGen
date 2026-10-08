@@ -1,0 +1,16 @@
+{
+  "dataset_id": 37,
+  "seed": 1,
+  "generator": "tabpfgen",
+  "mode": "augmentation",
+  "downstream_model": "xgb",
+  "auc": 0.7792835820895522,
+  "n_train_real": 384,
+  "n_train_used": 768,
+  "n_test": 384,
+  "classes": [
+    "tested_negative",
+    "tested_positive"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/37/seed_1/tabpfgen/augmentation/xgb/metrics.json"
+}

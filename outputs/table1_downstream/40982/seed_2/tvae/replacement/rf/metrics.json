@@ -1,0 +1,21 @@
+{
+  "dataset_id": 40982,
+  "seed": 2,
+  "generator": "tvae",
+  "mode": "replacement",
+  "downstream_model": "rf",
+  "auc": 0.8562978416741359,
+  "n_train_real": 970,
+  "n_train_used": 970,
+  "n_test": 971,
+  "classes": [
+    "Bumps",
+    "Dirtiness",
+    "K_Scratch",
+    "Other_Faults",
+    "Pastry",
+    "Stains",
+    "Z_Scratch"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/40982/seed_2/tvae/replacement/rf/metrics.json"
+}

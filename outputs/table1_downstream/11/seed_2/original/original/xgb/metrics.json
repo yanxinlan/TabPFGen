@@ -1,0 +1,17 @@
+{
+  "dataset_id": 11,
+  "seed": 2,
+  "generator": "original",
+  "mode": "original",
+  "downstream_model": "xgb",
+  "auc": 0.9209497589305281,
+  "n_train_real": 312,
+  "n_train_used": 312,
+  "n_test": 313,
+  "classes": [
+    "B",
+    "L",
+    "R"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/11/seed_2/original/original/xgb/metrics.json"
+}

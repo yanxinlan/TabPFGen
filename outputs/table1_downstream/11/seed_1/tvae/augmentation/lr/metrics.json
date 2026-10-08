@@ -1,0 +1,17 @@
+{
+  "dataset_id": 11,
+  "seed": 1,
+  "generator": "tvae",
+  "mode": "augmentation",
+  "downstream_model": "lr",
+  "auc": 0.9203090072320842,
+  "n_train_real": 312,
+  "n_train_used": 624,
+  "n_test": 313,
+  "classes": [
+    "B",
+    "L",
+    "R"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/11/seed_1/tvae/augmentation/lr/metrics.json"
+}

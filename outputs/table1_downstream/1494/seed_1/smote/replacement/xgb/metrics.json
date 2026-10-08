@@ -1,0 +1,16 @@
+{
+  "dataset_id": 1494,
+  "seed": 1,
+  "generator": "smote",
+  "mode": "replacement",
+  "downstream_model": "xgb",
+  "auc": 0.9024398073836276,
+  "n_train_real": 527,
+  "n_train_used": 527,
+  "n_test": 528,
+  "classes": [
+    "1",
+    "2"
+  ],
+  "result_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_downstream/1494/seed_1/smote/replacement/xgb/metrics.json"
+}
