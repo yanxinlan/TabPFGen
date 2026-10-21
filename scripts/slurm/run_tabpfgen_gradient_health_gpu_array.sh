@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-REPO_ROOT="${REPO_ROOT:-/projects/prjs1237/project/tabpfgen/TabPFGen}"
+REPO_ROOT="/projects/prjs1237/project/tabpfgen/TabPFGen"
 CONDA_ENV="${CONDA_ENV:-tabpfgen}"
 DATA_ROOT="${DATA_ROOT:-${REPO_ROOT}/data/openml_cc18_tabpfgen}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-${REPO_ROOT}/outputs/gradient_health}"

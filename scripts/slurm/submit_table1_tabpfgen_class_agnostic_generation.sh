@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${REPO_ROOT:-/projects/prjs1237/project/tabpfgen/TabPFGen}"
+REPO_ROOT="/projects/prjs1237/project/tabpfgen/TabPFGen"
 
 mkdir -p "${REPO_ROOT}/logs/table1_tabpfgen_class_agnostic_generate"
 

@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-REPO_ROOT="${REPO_ROOT:-/projects/prjs1237/project/tabpfgen/TabPFGen}"
+REPO_ROOT="/projects/prjs1237/project/tabpfgen/TabPFGen"
 CONDA_ENV="${CONDA_ENV:-tabpfgen}"
 GENERATOR_ROOT="${GENERATOR_ROOT:-${REPO_ROOT}/outputs/table1_generators}"
 OUTPUT_DIR="${OUTPUT_DIR:-${REPO_ROOT}/outputs/privacy_attacks}"

@@ -11,7 +11,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${REPO_ROOT:-$(cd -- "${SCRIPT_DIR}/../.." && pwd)}"
+REPO_ROOT="/projects/prjs1237/project/tabpfgen/TabPFGen"
 GENERATOR_ROOT="${GENERATOR_ROOT:-${REPO_ROOT}/outputs/table1_generators}"
 DOWNSTREAM_ROOT="${DOWNSTREAM_ROOT:-${REPO_ROOT}/outputs/table1_downstream}"
 OUTPUT_DIR="${OUTPUT_DIR:-${REPO_ROOT}/outputs/analysis}"

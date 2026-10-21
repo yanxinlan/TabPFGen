@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${REPO_ROOT:-$(cd -- "${SCRIPT_DIR}/.." && pwd)}"
+REPO_ROOT="/projects/prjs1237/project/tabpfgen/TabPFGen"
 TABPFN_PAPER_ROOT="${TABPFN_PAPER_ROOT:-${REPO_ROOT}/third_party/tabpfn_paper}"
 TABPFN_REPOSITORY="${TABPFN_REPOSITORY:-https://github.com/PriorLabs/TabPFN.git}"
 TABPFN_COMMIT="e640ef535e29c8f1b8b148c187744429f847e6d4"

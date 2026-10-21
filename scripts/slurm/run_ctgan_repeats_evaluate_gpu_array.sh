@@ -13,7 +13,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${REPO_ROOT:-$(cd -- "${SCRIPT_DIR}/../.." && pwd)}"
+REPO_ROOT="/projects/prjs1237/project/tabpfgen/TabPFGen"
 REPEAT_ROOT="${REPEAT_ROOT:-${REPO_ROOT}/outputs/ctgan_repeats}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-${REPO_ROOT}/outputs/ctgan_repeats_downstream}"
 CONDA_BASE="${CONDA_BASE:-${HOME}/anaconda3}"
