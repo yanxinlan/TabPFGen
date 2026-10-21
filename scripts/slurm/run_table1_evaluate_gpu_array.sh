@@ -20,6 +20,9 @@ OUTPUT_ROOT="${OUTPUT_ROOT:-${REPO_ROOT}/outputs/table1_downstream}"
 CONDA_BASE="${CONDA_BASE:-${HOME}/anaconda3}"
 CONDA_ENV="${CONDA_ENV:-tabpfgen}"
 DEVICE="${DEVICE:-cuda}"
+TABPFN_PAPER_ROOT="${TABPFN_PAPER_ROOT:-${REPO_ROOT}/third_party/tabpfn_paper}"
+TABPFN_PAPER_CHECKPOINT="${TABPFN_PAPER_CHECKPOINT:-${TABPFN_PAPER_ROOT}/tabpfn/models_diff/prior_diff_real_checkpoint_n_0_epoch_42.cpkt}"
+TABPFN_N_ENSEMBLES="${TABPFN_N_ENSEMBLES:-3}"
 OVERWRITE_FLAG="${OVERWRITE_FLAG:-}"
 TASK_OFFSET="${TASK_OFFSET:-0}"
 
@@ -98,4 +101,7 @@ cd "${REPO_ROOT}"
   --downstream-model "${DOWNSTREAM_MODEL}" \
   --seed "${SEED}" \
   --device "${DEVICE}" \
+  --tabpfn-source-root "${TABPFN_PAPER_ROOT}" \
+  --tabpfn-model-path "${TABPFN_PAPER_CHECKPOINT}" \
+  --tabpfn-n-ensembles "${TABPFN_N_ENSEMBLES}" \
   ${OVERWRITE_FLAG}

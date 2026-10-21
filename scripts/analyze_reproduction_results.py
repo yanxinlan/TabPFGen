@@ -159,14 +159,24 @@ def summarize_table1(metrics: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]
     metrics_for_table.loc[
         metrics_for_table["generator"] == "original", "mode"
     ] = "augmentation"
-    grouped = (
-        metrics_for_table.groupby(["mode", "downstream_model", "generator"], as_index=False)
+    group_columns = ["mode", "downstream_model", "generator"]
+    run_means = (
+        metrics_for_table.groupby([*group_columns, "seed"], as_index=False)
         .agg(
-            reproduced_auc_mean=("auc", "mean"),
-            reproduced_auc_std=("auc", "std"),
-            n_runs=("auc", "size"),
+            run_auc=("auc", "mean"),
+            n_datasets=("dataset_id", "nunique"),
         )
-        .sort_values(["mode", "downstream_model", "generator"])
+    )
+    grouped = (
+        run_means.groupby(group_columns, as_index=False)
+        .agg(
+            reproduced_auc_mean=("run_auc", "mean"),
+            reproduced_auc_std=("run_auc", "std"),
+            n_runs=("seed", "nunique"),
+            min_datasets_per_run=("n_datasets", "min"),
+            max_datasets_per_run=("n_datasets", "max"),
+        )
+        .sort_values(group_columns)
     )
     paper_rows = [
         {

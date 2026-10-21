@@ -24,8 +24,12 @@ from train_table1_generators import load_dataset, split_train_test
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="TabPFGen gradient-health logging.")
-    parser.add_argument("--data-root", type=Path, default=Path("data/openml_cc18_tabpfgen"))
-    parser.add_argument("--output-root", type=Path, default=Path("outputs/gradient_health"))
+    parser.add_argument(
+        "--data-root", type=Path, default=Path("data/openml_cc18_tabpfgen")
+    )
+    parser.add_argument(
+        "--output-root", type=Path, default=Path("outputs/gradient_health")
+    )
     parser.add_argument("--dataset-id", type=int, required=True)
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--test-size", type=float, default=0.5)
@@ -36,6 +40,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--noise-scale", type=float, default=0.01)
     parser.add_argument("--init-noise-std", type=float, default=0.01)
     parser.add_argument("--gradient-clip", type=float, default=0.0)
+    parser.add_argument("--swapped-energy-weight", type=float, default=1.0)
+    parser.add_argument("--n-ensembles", type=int, default=3)
+    parser.add_argument("--tabpfn-source-root", type=Path, default=None)
+    parser.add_argument("--tabpfn-model-path", type=Path, default=None)
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
@@ -74,6 +82,16 @@ def main() -> None:
         init_noise_std=args.init_noise_std,
         device=args.device,
         random_state=args.seed,
+        scale_features=False,
+        init_strategy="class_matched",
+        swapped_energy_weight=args.swapped_energy_weight,
+        n_estimators=args.n_ensembles,
+        paper_tabpfn_root=(
+            None if args.tabpfn_source_root is None else str(args.tabpfn_source_root)
+        ),
+        model_path=(
+            None if args.tabpfn_model_path is None else str(args.tabpfn_model_path)
+        ),
     )
     gen.fit(X, y)
     y_synth_encoded = gen.label_encoder.transform(y_synth).astype(np.int64)
@@ -111,7 +129,9 @@ def main() -> None:
                 failure = row
                 break
             if args.gradient_clip > 0:
-                norms = torch.linalg.vector_norm(grad, dim=1, keepdim=True).clamp_min(1e-12)
+                norms = torch.linalg.vector_norm(grad, dim=1, keepdim=True).clamp_min(
+                    1e-12
+                )
                 scale = torch.clamp(args.gradient_clip / norms, max=1.0)
                 grad = grad * scale
             noise = torch.randn_like(x_req) * args.noise_scale

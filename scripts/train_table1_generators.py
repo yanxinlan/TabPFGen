@@ -67,6 +67,7 @@ SYNTHCITY_HYPERPARAMS: dict[str, dict[str, Any]] = {
         "encoder_dropout": 0.1,
         "data_encoder_max_clusters": 10,
         "robust_divergence_beta": 2,
+        "clipping_value": 1,
         "sampling_patience": 500,
     },
     "ctgan": {
@@ -137,8 +138,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Train one Table 1 generator on one OpenML-CC18 dataset split."
     )
-    parser.add_argument("--data-root", type=Path, default=Path("data/openml_cc18_tabpfgen"))
-    parser.add_argument("--output-root", type=Path, default=Path("outputs/table1_generators"))
+    parser.add_argument(
+        "--data-root", type=Path, default=Path("data/openml_cc18_tabpfgen")
+    )
+    parser.add_argument(
+        "--output-root", type=Path, default=Path("outputs/table1_generators")
+    )
     parser.add_argument("--dataset-id", type=int, required=True)
     parser.add_argument(
         "--generator",
@@ -158,6 +163,45 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tabpfgen-step-size", type=float, default=0.01)
     parser.add_argument("--tabpfgen-noise-scale", type=float, default=0.01)
     parser.add_argument("--tabpfgen-init-noise-std", type=float, default=0.01)
+    parser.add_argument(
+        "--tabpfgen-init-strategy",
+        choices=("paired", "class_matched", "class_agnostic"),
+        default="paired",
+    )
+    parser.add_argument(
+        "--tabpfgen-selection-metric",
+        choices=("energy", "train_auc"),
+        default="train_auc",
+    )
+    parser.add_argument("--tabpfgen-selection-interval", type=int, default=1)
+    parser.add_argument(
+        "--tabpfgen-label-strategy",
+        choices=("exact_train_ratio", "bootstrap_train_ratio", "balanced"),
+        default="exact_train_ratio",
+        help="How to manually define y_synth for TabPFGen.",
+    )
+    parser.add_argument("--tabpfgen-swapped-energy-weight", type=float, default=1.0)
+    parser.add_argument("--tabpfgen-n-ensembles", type=int, default=3)
+    parser.add_argument("--tabpfgen-model-path", type=Path, default=None)
+    parser.add_argument("--tabpfgen-source-root", type=Path, default=None)
+    parser.add_argument(
+        "--tabpfgen-scale",
+        dest="tabpfgen_scale_features",
+        action="store_true",
+        help="Apply an extra StandardScaler before TabPFN (off for paper reproduction).",
+    )
+    parser.add_argument(
+        "--tabpfgen-no-scale",
+        dest="tabpfgen_scale_features",
+        action="store_false",
+        help=argparse.SUPPRESS,
+    )
+    parser.set_defaults(tabpfgen_scale_features=False)
+    parser.add_argument(
+        "--tabpfgen-stability-retries",
+        action="store_true",
+        help="Retry with altered SGLD parameters; off for exact paper settings.",
+    )
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
@@ -191,7 +235,9 @@ def read_table(path: Path) -> pd.DataFrame:
         return pd.read_csv(path.with_suffix(".csv"))
     if path.with_suffix(".parquet").exists():
         return pd.read_parquet(path.with_suffix(".parquet"))
-    raise FileNotFoundError(f"Missing {path.with_suffix('.csv')} or {path.with_suffix('.parquet')}")
+    raise FileNotFoundError(
+        f"Missing {path.with_suffix('.csv')} or {path.with_suffix('.parquet')}"
+    )
 
 
 def load_dataset(data_root: Path, dataset_id: int) -> pd.DataFrame:
@@ -202,7 +248,9 @@ def load_dataset(data_root: Path, dataset_id: int) -> pd.DataFrame:
     return combined
 
 
-def split_train_test(df: pd.DataFrame, seed: int, test_size: float) -> tuple[pd.DataFrame, pd.DataFrame]:
+def split_train_test(
+    df: pd.DataFrame, seed: int, test_size: float
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     train_df, test_df = train_test_split(
         df,
         test_size=test_size,
@@ -220,12 +268,60 @@ def dataframe_from_generated(generated: Any) -> pd.DataFrame:
     raise TypeError(f"Unsupported generated object type: {type(generated)!r}")
 
 
+def sample_exact_training_class_counts(
+    batches: list[pd.DataFrame],
+    train_df: pd.DataFrame,
+    seed: int,
+) -> pd.DataFrame | None:
+    """Return exactly one training-set-sized synthetic sample, if possible."""
+    if not batches:
+        return None
+    candidates = pd.concat(batches, ignore_index=True)
+    if "target" not in candidates.columns:
+        raise ValueError("Generated data does not contain the target column")
+
+    sampled_parts: list[pd.DataFrame] = []
+    target_counts = train_df["target"].value_counts(sort=False, dropna=False)
+    rng = np.random.default_rng(seed)
+    for label, required_count in target_counts.items():
+        available = candidates[candidates["target"] == label]
+        if len(available) < int(required_count):
+            return None
+        sampled_parts.append(
+            available.sample(
+                n=int(required_count),
+                replace=False,
+                random_state=int(rng.integers(0, 2**31 - 1)),
+            )
+        )
+
+    synthetic = pd.concat(sampled_parts, ignore_index=True)
+    synthetic = synthetic.sample(
+        frac=1.0,
+        random_state=int(rng.integers(0, 2**31 - 1)),
+    ).reset_index(drop=True)
+    synthetic["target"] = synthetic["target"].astype(train_df["target"].dtype)
+    return synthetic.loc[:, train_df.columns]
+
+
+def validate_training_sample_profile(
+    synthetic: pd.DataFrame, train_df: pd.DataFrame
+) -> None:
+    expected = train_df["target"].value_counts(dropna=False).to_dict()
+    observed = synthetic["target"].value_counts(dropna=False).to_dict()
+    if len(synthetic) != len(train_df) or observed != expected:
+        raise RuntimeError(
+            "Synthetic data must match the training sample size and class counts; "
+            f"expected n={len(train_df)}, counts={expected}, "
+            f"observed n={len(synthetic)}, counts={observed}"
+        )
+
+
 def train_smote(train_df: pd.DataFrame, seed: int) -> tuple[None, pd.DataFrame]:
     from imblearn.over_sampling import SMOTE
 
     X = train_df.drop(columns=["target"])
     y = train_df["target"]
-    rng = np.random.default_rng(seed)
     target_counts = y.value_counts()
     desired = target_counts.to_dict()
     for cls, count in target_counts.items():
@@ -242,14 +338,10 @@ def train_smote(train_df: pd.DataFrame, seed: int) -> tuple[None, pd.DataFrame]:
         ],
         axis=1,
     ).reset_index(drop=True)
-    if len(synthetic) != len(train_df):
-        synthetic = synthetic.sample(
-            n=len(train_df),
-            replace=len(synthetic) < len(train_df),
-            random_state=seed,
-        )
-    synthetic = synthetic.sample(frac=1.0, random_state=int(rng.integers(0, 2**31 - 1)))
-    return None, synthetic.reset_index(drop=True)
+    synthetic = sample_exact_training_class_counts([synthetic], train_df, seed)
+    if synthetic is None:
+        raise RuntimeError("SMOTE did not produce the requested per-class sample counts")
+    return None, synthetic
 
 
 def resolve_plugin_name(requested: str) -> str:
@@ -289,10 +381,28 @@ def train_synthcity_generator(
 
     plugin = Plugins(categories=["generic"]).get(plugin_name, **params)
     plugin.fit(train_df)
-    synthetic = dataframe_from_generated(
-        plugin.generate(count=len(train_df), random_state=seed)
-    )
-    return plugin, synthetic.reset_index(drop=True), plugin_name
+    batches: list[pd.DataFrame] = []
+    synthetic = None
+    for batch_index in range(10):
+        batches.append(
+            dataframe_from_generated(
+                plugin.generate(
+                    count=len(train_df),
+                    random_state=seed + batch_index,
+                )
+            )
+        )
+        synthetic = sample_exact_training_class_counts(batches, train_df, seed)
+        if synthetic is not None:
+            break
+    if synthetic is None:
+        observed = pd.concat(batches, ignore_index=True)["target"].value_counts().to_dict()
+        required = train_df["target"].value_counts().to_dict()
+        raise RuntimeError(
+            "SynthCity could not generate enough rows for every training class after "
+            f"10 batches; required={required}, observed={observed}"
+        )
+    return plugin, synthetic, plugin_name
 
 
 def train_tabpfgen_generator(
@@ -303,13 +413,35 @@ def train_tabpfgen_generator(
     step_size: float,
     noise_scale: float,
     init_noise_std: float,
+    init_strategy: str,
+    selection_metric: str,
+    selection_interval: int,
+    label_strategy: str,
+    swapped_energy_weight: float,
+    scale_features: bool,
+    n_ensembles: int,
+    model_path: Path | None,
+    source_root: Path | None,
+    stability_retries: bool,
 ) -> tuple[None, pd.DataFrame, dict[str, Any]]:
     from tabpfgen import TabPFGen
+    from tabpfgen.paper_tabpfn import PAPER_CHECKPOINT_SHA256, PAPER_TABPFN_COMMIT
 
     X = train_df.drop(columns=["target"]).to_numpy(dtype=np.float32)
     y = train_df["target"].to_numpy()
     rng = np.random.default_rng(seed)
-    y_synth = rng.choice(y, size=len(y), replace=True)
+    if label_strategy == "bootstrap_train_ratio":
+        y_synth = rng.choice(y, size=len(y), replace=True)
+    elif label_strategy == "balanced":
+        labels, counts = np.unique(y, return_counts=True)
+        base = len(y) // len(labels)
+        rem = len(y) - base * len(labels)
+        y_synth = np.concatenate(
+            [np.repeat(label, base + (idx < rem)) for idx, label in enumerate(labels)]
+        )
+        rng.shuffle(y_synth)
+    else:
+        y_synth = y.copy()
 
     attempts = [
         {
@@ -318,19 +450,24 @@ def train_tabpfgen_generator(
             "sgld_noise_scale": noise_scale,
             "init_noise_std": init_noise_std,
         },
-        {
-            "n_sgld_steps": n_steps,
-            "sgld_step_size": step_size * 0.5,
-            "sgld_noise_scale": noise_scale * 0.5,
-            "init_noise_std": init_noise_std,
-        },
-        {
-            "n_sgld_steps": n_steps,
-            "sgld_step_size": step_size * 0.1,
-            "sgld_noise_scale": noise_scale * 0.1,
-            "init_noise_std": init_noise_std,
-        },
     ]
+    if stability_retries:
+        attempts.extend(
+            [
+                {
+                    "n_sgld_steps": n_steps,
+                    "sgld_step_size": step_size * 0.5,
+                    "sgld_noise_scale": noise_scale * 0.5,
+                    "init_noise_std": init_noise_std,
+                },
+                {
+                    "n_sgld_steps": n_steps,
+                    "sgld_step_size": step_size * 0.1,
+                    "sgld_noise_scale": noise_scale * 0.1,
+                    "init_noise_std": init_noise_std,
+                },
+            ]
+        )
     errors: list[str] = []
     for attempt_idx, params in enumerate(attempts, start=1):
         try:
@@ -338,6 +475,14 @@ def train_tabpfgen_generator(
                 **params,
                 device=device,
                 random_state=seed,
+                init_strategy=init_strategy,
+                selection_metric=selection_metric,
+                selection_interval=selection_interval,
+                swapped_energy_weight=swapped_energy_weight,
+                scale_features=scale_features,
+                n_estimators=n_ensembles,
+                model_path=None if model_path is None else str(model_path),
+                paper_tabpfn_root=None if source_root is None else str(source_root),
             )
             X_synth, y_synth_out = generator.generate_classification(
                 X,
@@ -347,12 +492,36 @@ def train_tabpfgen_generator(
                 y_synth=y_synth,
             )
             if not np.isfinite(X_synth).all():
-                raise FloatingPointError("TabPFGen returned non-finite synthetic features")
+                raise FloatingPointError(
+                    "TabPFGen returned non-finite synthetic features"
+                )
             metadata = {
                 **params,
                 "attempt": attempt_idx,
                 "retry_errors": errors,
                 "fallback_used": attempt_idx > 1,
+                "init_strategy": init_strategy,
+                "selection_metric": selection_metric,
+                "selection_interval": selection_interval,
+                "label_strategy": label_strategy,
+                "swapped_energy_weight": swapped_energy_weight,
+                "scale_features": scale_features,
+                "n_ensembles": n_ensembles,
+                "model_path": None if model_path is None else str(model_path),
+                "source_root": None if source_root is None else str(source_root),
+                "paper_tabpfn_commit": PAPER_TABPFN_COMMIT,
+                "paper_checkpoint_sha256": PAPER_CHECKPOINT_SHA256,
+                "stability_retries": stability_retries,
+                "best_step": (
+                    generator.last_trace_.best_step
+                    if generator.last_trace_ is not None
+                    else None
+                ),
+                "best_score": (
+                    generator.last_trace_.best_score
+                    if generator.last_trace_ is not None
+                    else None
+                ),
             }
             break
         except FloatingPointError as exc:
@@ -388,7 +557,9 @@ def main() -> None:
     args = parse_args()
     set_seed(args.seed)
 
-    out_dir = args.output_root / str(args.dataset_id) / f"seed_{args.seed}" / args.generator
+    out_dir = (
+        args.output_root / str(args.dataset_id) / f"seed_{args.seed}" / args.generator
+    )
     synthetic_path = out_dir / "synthetic.csv"
     train_path = out_dir / "train.csv"
     test_path = out_dir / "test.csv"
@@ -413,6 +584,16 @@ def main() -> None:
             args.tabpfgen_step_size,
             args.tabpfgen_noise_scale,
             args.tabpfgen_init_noise_std,
+            args.tabpfgen_init_strategy,
+            args.tabpfgen_selection_metric,
+            args.tabpfgen_selection_interval,
+            args.tabpfgen_label_strategy,
+            args.tabpfgen_swapped_energy_weight,
+            args.tabpfgen_scale_features,
+            args.tabpfgen_n_ensembles,
+            args.tabpfgen_model_path,
+            args.tabpfgen_source_root,
+            args.tabpfgen_stability_retries,
         )
         resolved_name = "tabpfgen"
     else:
@@ -423,6 +604,8 @@ def main() -> None:
             args.n_iter,
             args.device,
         )
+
+    validate_training_sample_profile(synthetic, train_df)
 
     model_path = save_generator(generator, out_dir)
     train_df.to_csv(train_path, index=False)
@@ -453,9 +636,11 @@ def main() -> None:
         "n_test": int(len(test_df)),
         "n_synthetic": int(len(synthetic)),
         "target_counts_train": train_df["target"].value_counts().to_dict(),
-        "target_counts_synthetic": synthetic["target"].value_counts().to_dict()
-        if "target" in synthetic.columns
-        else {},
+        "target_counts_synthetic": (
+            synthetic["target"].value_counts().to_dict()
+            if "target" in synthetic.columns
+            else {}
+        ),
         "paths": {
             "train": str(train_path),
             "test": str(test_path),

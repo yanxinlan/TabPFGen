@@ -18,16 +18,31 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 
-GENERATORS = ("original", "smote", "ctgan", "tvae", "nflow", "rtvae", "tabddpm", "tabpfgen")
+GENERATORS = (
+    "original",
+    "smote",
+    "ctgan",
+    "tvae",
+    "nflow",
+    "rtvae",
+    "tabddpm",
+    "tabpfgen",
+)
 MODELS = ("xgb", "rf", "lr", "tabpfn")
 MODES = ("augmentation", "replacement")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate one Table 1 downstream run.")
-    parser.add_argument("--data-root", type=Path, default=Path("data/openml_cc18_tabpfgen"))
-    parser.add_argument("--generator-root", type=Path, default=Path("outputs/table1_generators"))
-    parser.add_argument("--output-root", type=Path, default=Path("outputs/table1_downstream"))
+    parser.add_argument(
+        "--data-root", type=Path, default=Path("data/openml_cc18_tabpfgen")
+    )
+    parser.add_argument(
+        "--generator-root", type=Path, default=Path("outputs/table1_generators")
+    )
+    parser.add_argument(
+        "--output-root", type=Path, default=Path("outputs/table1_downstream")
+    )
     parser.add_argument("--dataset-id", type=int, required=True)
     parser.add_argument("--generator", choices=GENERATORS, required=True)
     parser.add_argument("--downstream-model", choices=MODELS, required=True)
@@ -35,6 +50,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--test-size", type=float, default=0.5)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--tabpfn-source-root", type=Path, default=None)
+    parser.add_argument("--tabpfn-model-path", type=Path, default=None)
+    parser.add_argument("--tabpfn-n-ensembles", type=int, default=3)
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
@@ -55,7 +73,9 @@ def set_seed(seed: int) -> None:
 def dataset_dir(data_root: Path, dataset_id: int) -> Path:
     matches = sorted(data_root.glob(f"{dataset_id}_*"))
     if not matches:
-        raise FileNotFoundError(f"No dataset directory matching {dataset_id}_* under {data_root}")
+        raise FileNotFoundError(
+            f"No dataset directory matching {dataset_id}_* under {data_root}"
+        )
     if len(matches) > 1:
         raise RuntimeError(f"Multiple dataset directories for {dataset_id}: {matches}")
     return matches[0]
@@ -72,12 +92,16 @@ def load_original_split(data_root: Path, dataset_id: int, seed: int, test_size: 
     return train_df.reset_index(drop=True), test_df.reset_index(drop=True)
 
 
-def load_generated_split(generator_root: Path, dataset_id: int, seed: int, generator: str):
+def load_generated_split(
+    generator_root: Path, dataset_id: int, seed: int, generator: str
+):
     base = generator_root / str(dataset_id) / f"seed_{seed}" / generator
     train_path = base / "train.csv"
     test_path = base / "test.csv"
     synthetic_path = base / "synthetic.csv"
-    missing = [path for path in (train_path, test_path, synthetic_path) if not path.exists()]
+    missing = [
+        path for path in (train_path, test_path, synthetic_path) if not path.exists()
+    ]
     if missing:
         raise FileNotFoundError(f"Missing generator outputs: {missing}")
     return (
@@ -102,7 +126,14 @@ def make_train_frame(
     return synthetic.copy()
 
 
-def make_model(name: str, seed: int, device: str):
+def make_model(
+    name: str,
+    seed: int,
+    device: str,
+    tabpfn_source_root: Path | None = None,
+    tabpfn_model_path: Path | None = None,
+    tabpfn_n_ensembles: int = 3,
+):
     if name == "xgb":
         from xgboost import XGBClassifier
 
@@ -125,9 +156,15 @@ def make_model(name: str, seed: int, device: str):
             LogisticRegression(max_iter=5000, random_state=seed, n_jobs=-1),
         )
     if name == "tabpfn":
-        from tabpfn import TabPFNClassifier
+        from tabpfgen.paper_tabpfn import PaperTabPFNClassifier
 
-        return TabPFNClassifier(device=device, random_state=seed, n_estimators=1)
+        return PaperTabPFNClassifier(
+            device=device,
+            source_root=tabpfn_source_root,
+            checkpoint_path=tabpfn_model_path,
+            random_state=seed,
+            n_ensembles=tabpfn_n_ensembles,
+        )
     raise ValueError(name)
 
 
@@ -187,7 +224,14 @@ def main() -> None:
     X_train = train_df.drop(columns=["target"]).to_numpy(dtype=np.float32)
     X_test = test_df.drop(columns=["target"]).to_numpy(dtype=np.float32)
 
-    model = make_model(args.downstream_model, args.seed, args.device)
+    model = make_model(
+        args.downstream_model,
+        args.seed,
+        args.device,
+        args.tabpfn_source_root,
+        args.tabpfn_model_path,
+        args.tabpfn_n_ensembles,
+    )
     model.fit(X_train, y_train)
     proba = predict_proba(model, X_test)
     auc = auc_score(y_test, proba, len(label_encoder.classes_))
@@ -203,6 +247,15 @@ def main() -> None:
         "n_train_used": int(len(train_df)),
         "n_test": int(len(test_df)),
         "classes": [str(c) for c in label_encoder.classes_],
+        "tabpfn_source_root": (
+            str(args.tabpfn_source_root) if args.downstream_model == "tabpfn" else None
+        ),
+        "tabpfn_model_path": (
+            str(args.tabpfn_model_path) if args.downstream_model == "tabpfn" else None
+        ),
+        "tabpfn_n_ensembles": (
+            args.tabpfn_n_ensembles if args.downstream_model == "tabpfn" else None
+        ),
         "result_path": str(result_path),
     }
     result_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")

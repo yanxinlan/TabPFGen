@@ -36,12 +36,24 @@ What makes TabPFGen interesting is that it's built on the TabPFN transformer arc
 ## Installation
 
 ```bash
-pip install tabpfgen
+conda activate tabpfgen
+python -m pip install -r requirements-tabpfn.txt
+python -m pip install --no-deps -e .
+scripts/setup_paper_tabpfn.sh
 ```
 
-Verify installation
+The setup script checks out the TabPFN source revision immediately preceding the
+paper release and verifies the exact checkpoint named in Appendix C.2 by SHA256.
+The reproduction does not use the currently installed `tabpfn` package or its
+default model.
+
+For the complete Table 1 workflow, `scripts/slurm/setup_cluster_envs.sh` keeps
+the paper TabPFN runtime in `tabpfgen` and SynthCity baselines in the separate
+`synthcity` environment so their incompatible Torch requirements cannot mix.
+
+Verify installation:
 ```bash
-python -c 'from tabpfgen import TabPFGen; print("Installation successful!")'
+python -c 'from tabpfgen.paper_tabpfn import default_paper_checkpoint; print(default_paper_checkpoint())'
 ```
 
 ## Quick Start
@@ -126,6 +138,9 @@ The package includes comprehensive visualization tools:
 - `sgld_step_size`: Step size for SGLD updates (default: 0.01)
 - `sgld_noise_scale`: Scale of noise in SGLD (default: 0.01)
 - `init_noise_std`: Standard deviation of the Gaussian noise used for row-bootstrap initialization (default: 0.01)
+- `scale_features`: Apply an outer `StandardScaler` before TabPFN (default: False;
+  the paper checkpoint performs differentiable context-based normalization internally)
+- `n_estimators`: Number of legacy TabPFN ensemble configurations (default: 3)
 - `swapped_energy_weight`: Weight for the paper's swapped-context regularization term (default: 0.0, corresponding to `TabPFGen_core`)
 - `device`: Computing device ('cpu' or 'cuda', default: 'auto')
 
@@ -159,8 +174,10 @@ For detailed documentation and tutorials, visit our [tutorial pages](https://git
 
 3. **Optional Full-TabPFGen Regularization**: Set `swapped_energy_weight > 0` to add the paper's swapped-context energy term, where TabPFN is conditioned on the synthetic batch and scores the original training rows.
 
-4. **Quality Assurance**:
-   - Automatic feature scaling
+4. **Paper preprocessing**:
+   - No external feature scaling in the reproduction path
+   - The pinned legacy TabPFN runtime normalizes using the in-context training rows
+   - This preserves the paper's `0.01` initialization-noise scale in the original feature coordinates
    - Class balance maintenance
    - Distribution matching through energy minimization
 

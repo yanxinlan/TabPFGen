@@ -42,6 +42,7 @@ class TestTabPFGenPaperAlgorithm(unittest.TestCase):
             init_noise_std=0.0,
             device="cpu",
             scale_features=False,
+            init_strategy="class_matched",
             energy_model_factory=energy_factory,
         )
 
@@ -92,6 +93,7 @@ class TestTabPFGenPaperAlgorithm(unittest.TestCase):
             init_noise_std=0.0,
             device="cpu",
             scale_features=False,
+            init_strategy="class_matched",
             energy_model_factory=energy_factory,
         )
 
@@ -107,50 +109,42 @@ class TestTabPFGenPaperAlgorithm(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             self.generator.generate_regression(self.X, np.array([0.1, 0.2]), 2)
 
-    def test_tabpfn_adapter_prefers_predict_logits_over_raw_predict(self):
+    def test_tabpfn_adapter_delegates_to_paper_runtime_logits(self):
         class Classifier:
             def __init__(self):
                 self.used = None
 
-            def predict_logits(self, x):
-                self.used = "predict_logits"
-                return torch.ones((x.shape[0], 2), device=x.device)
-
-            def _raw_predict(self, x, return_logits=False):
-                del return_logits
-                self.used = "_raw_predict"
-                return torch.zeros((x.shape[0], 2), device=x.device)
+            def logits(self, x):
+                self.used = "paper_logits"
+                return x[:, :1].repeat(1, 2)
 
         adapter = object.__new__(_TabPFNLogitEnergy)
         adapter.classifier = Classifier()
 
-        logits = adapter.logits(torch.zeros((3, 2)))
+        x = torch.zeros((3, 2), requires_grad=True)
+        logits = adapter.logits(x)
 
-        self.assertEqual(adapter.classifier.used, "predict_logits")
-        torch.testing.assert_close(logits, torch.ones((3, 2)))
+        self.assertEqual(adapter.classifier.used, "paper_logits")
+        self.assertTrue(logits.requires_grad)
 
-    def test_tabpfn_adapter_falls_back_when_predict_logits_detaches(self):
+    def test_tabpfn_adapter_rejects_detached_paper_logits(self):
         class Classifier:
-            def __init__(self):
-                self.used = []
-
-            def predict_logits(self, x):
-                self.used.append("predict_logits")
+            def logits(self, x):
                 return torch.ones((x.shape[0], 2), device=x.device).detach()
-
-            def _raw_predict(self, x, return_logits=False):
-                del return_logits
-                self.used.append("_raw_predict")
-                return x[:, :1].repeat(1, 2)
 
         adapter = object.__new__(_TabPFNLogitEnergy)
         adapter.classifier = Classifier()
         x = torch.zeros((3, 2), requires_grad=True)
 
-        logits = adapter.logits(x)
+        with self.assertRaises(RuntimeError):
+            adapter.logits(x)
 
-        self.assertEqual(adapter.classifier.used, ["predict_logits", "_raw_predict"])
-        self.assertTrue(logits.requires_grad)
+    def test_paper_defaults_do_not_apply_outer_scaling(self):
+        generator = TabPFGen(energy_model_factory=energy_factory)
+
+        self.assertFalse(generator.scale_features)
+        self.assertEqual(generator.n_estimators, 3)
+        self.assertEqual(generator.init_strategy, "paired")
 
 
 if __name__ == "__main__":

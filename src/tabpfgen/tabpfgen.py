@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Optional, Tuple
+from typing import Callable, Literal, Optional, Tuple
 import warnings
 
 import numpy as np
 import torch
+from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+
+from .paper_tabpfn import PaperTabPFNLogitEnergy
 
 warnings.filterwarnings(
     "ignore", category=UserWarning, module="sklearn.preprocessing._encoders"
@@ -18,12 +21,14 @@ class TabPFGenSampleTrace:
     """Diagnostics from one TabPFGen sampling run."""
 
     mean_energy: list[float]
+    selection_score: list[float]
     best_step: int
-    best_mean_energy: float
+    best_score: float
+    selection_metric: str
 
 
 class _TabPFNLogitEnergy:
-    """Expose the paper's TabPFN logit energy.
+    """Expose the paper's frozen legacy TabPFN checkpoint as logit energy.
 
     The TabPFGen paper defines E(x | y) = -f(x)[y], where f is the frozen
     TabPFN classifier conditioned on the real training set. This wrapper
@@ -37,69 +42,28 @@ class _TabPFNLogitEnergy:
         y_train: torch.Tensor,
         *,
         device: torch.device,
-        n_estimators: int = 1,
-        model_path: str = "auto",
+        n_estimators: int = 3,
+        model_path: str | None = None,
+        paper_tabpfn_root: str | None = None,
         random_state: int | None = 0,
     ) -> None:
-        from tabpfn import TabPFNClassifier
-
-        kwargs = {
-            "device": str(device),
-            "n_estimators": n_estimators,
-            "model_path": model_path,
-            "balance_probabilities": False,
-            "average_before_softmax": True,
-            "softmax_temperature": 1.0,
-            "random_state": random_state,
-            "differentiable_input": True,
-        }
-        try:
-            self.classifier = TabPFNClassifier(**kwargs)
-        except TypeError:
-            kwargs.pop("differentiable_input")
-            self.classifier = TabPFNClassifier(**kwargs)
-
-        if hasattr(self.classifier, "fit_with_differentiable_input"):
-            self.classifier.fit_with_differentiable_input(x_train, y_train)
-        else:
-            self.classifier.fit(x_train, y_train)
-
-    def _coerce_logits(self, logits: object, x_query: torch.Tensor) -> torch.Tensor:
-        if not isinstance(logits, torch.Tensor):
-            logits = torch.as_tensor(logits, device=x_query.device, dtype=x_query.dtype)
-        return logits.to(device=x_query.device, dtype=x_query.dtype)
-
-    def _logits_are_differentiable(
-        self, logits: torch.Tensor, x_query: torch.Tensor
-    ) -> bool:
-        return (not x_query.requires_grad) or logits.requires_grad
+        self.classifier = PaperTabPFNLogitEnergy(
+            x_train,
+            y_train,
+            device=device,
+            source_root=paper_tabpfn_root,
+            checkpoint_path=model_path,
+            n_ensembles=n_estimators,
+            random_state=0 if random_state is None else random_state,
+        )
 
     def logits(self, x_query: torch.Tensor) -> torch.Tensor:
-        candidates = []
-        if hasattr(self.classifier, "predict_logits"):
-            candidates.append(lambda: self.classifier.predict_logits(x_query))
-        if hasattr(self.classifier, "_raw_predict"):
-            candidates.append(
-                lambda: self.classifier._raw_predict(x_query, return_logits=True)
-            )
-        if not candidates:
+        logits = self.classifier.logits(x_query)
+        if x_query.requires_grad and not logits.requires_grad:
             raise RuntimeError(
-                "Paper-faithful TabPFGen requires a TabPFNClassifier with "
-                "differentiable raw-logit support."
+                "The paper TabPFN runtime returned logits detached from x_synth"
             )
-
-        for get_logits in candidates:
-            logits = self._coerce_logits(get_logits(), x_query)
-            if self._logits_are_differentiable(logits, x_query):
-                return logits
-
-        raise RuntimeError(
-            "TabPFN raw logits are detached from x_synth. The sampler tried "
-            "predict_logits() and _raw_predict(..., return_logits=True), but "
-            "neither returned differentiable logits. Install/use a TabPFN version "
-            "that supports differentiable_input=True; otherwise SGLD cannot "
-            "backpropagate the paper's energy."
-        )
+        return logits
 
 
 class TabPFGen:
@@ -118,10 +82,14 @@ class TabPFGen:
         sgld_noise_scale: float = 0.01,
         init_noise_std: float = 0.01,
         device: str | torch.device | None = "auto",
-        scale_features: bool = True,
+        scale_features: bool = False,
         keep_best: bool = True,
-        n_estimators: int = 1,
-        model_path: str = "auto",
+        selection_metric: Literal["energy", "train_auc"] = "energy",
+        selection_interval: int = 1,
+        init_strategy: Literal["paired", "class_matched", "class_agnostic"] = "paired",
+        n_estimators: int = 3,
+        model_path: str | None = None,
+        paper_tabpfn_root: str | None = None,
         random_state: int | None = 0,
         swapped_energy_weight: float = 0.0,
         verbose: bool = False,
@@ -135,8 +103,18 @@ class TabPFGen:
         self.init_noise_std = float(init_noise_std)
         self.scale_features = bool(scale_features)
         self.keep_best = bool(keep_best)
+        if selection_metric not in {"energy", "train_auc"}:
+            raise ValueError("selection_metric must be 'energy' or 'train_auc'")
+        if init_strategy not in {"paired", "class_matched", "class_agnostic"}:
+            raise ValueError(
+                "init_strategy must be 'paired', 'class_matched', or 'class_agnostic'"
+            )
+        self.selection_metric = selection_metric
+        self.selection_interval = max(1, int(selection_interval))
+        self.init_strategy = init_strategy
         self.n_estimators = int(n_estimators)
         self.model_path = model_path
+        self.paper_tabpfn_root = paper_tabpfn_root
         self.random_state = random_state
         self.swapped_energy_weight = float(swapped_energy_weight)
         self.verbose = bool(verbose)
@@ -206,6 +184,7 @@ class TabPFGen:
             device=self.device,
             n_estimators=self.n_estimators,
             model_path=self.model_path,
+            paper_tabpfn_root=self.paper_tabpfn_root,
             random_state=self.random_state,
         )
 
@@ -277,12 +256,30 @@ class TabPFGen:
         y_train: torch.Tensor,
         y_synth: torch.Tensor,
     ) -> torch.Tensor:
+        if self.init_strategy == "paired":
+            if y_synth.shape != y_train.shape or not torch.equal(y_synth, y_train):
+                raise ValueError(
+                    "paired initialization requires y_synth to equal y_train in the "
+                    "same order"
+                )
+            x_init = x_train.detach().clone()
+            if self.init_noise_std > 0:
+                x_init = x_init + torch.randn_like(x_init) * self.init_noise_std
+            return x_init
+
         x_parts: list[torch.Tensor] = []
         for label in y_synth:
-            matching = torch.where(y_train == label)[0]
-            if matching.numel() == 0:
-                raise ValueError(f"No training rows found for encoded class {label}")
-            idx = matching[torch.randint(0, matching.numel(), (1,), device=self.device)]
+            if self.init_strategy == "class_matched":
+                matching = torch.where(y_train == label)[0]
+                if matching.numel() == 0:
+                    raise ValueError(
+                        f"No training rows found for encoded class {label}"
+                    )
+                idx = matching[
+                    torch.randint(0, matching.numel(), (1,), device=self.device)
+                ]
+            else:
+                idx = torch.randint(0, y_train.numel(), (1,), device=self.device)
             x_parts.append(x_train[idx])
         x_init = torch.cat(x_parts, dim=0)
         if self.init_noise_std > 0:
@@ -310,6 +307,29 @@ class TabPFGen:
         idx = torch.randint(0, y_train.numel(), (n_samples,), device=self.device)
         return y_train[idx]
 
+    def _auc_with_synthetic_context(
+        self,
+        x_context: torch.Tensor,
+        y_context: torch.Tensor,
+        x_eval: torch.Tensor,
+        y_eval: torch.Tensor,
+    ) -> float:
+        if torch.unique(y_context).numel() < 2 or torch.unique(y_eval).numel() < 2:
+            return float("-inf")
+        with torch.enable_grad():
+            eval_model = self._make_energy_model(x_context.detach(), y_context.long())
+            logits = self._logits_from_model(eval_model, x_eval.detach())
+        scores = torch.softmax(logits, dim=-1).detach().cpu().numpy()
+        y_true = y_eval.detach().cpu().numpy()
+        try:
+            if scores.shape[1] == 2:
+                return float(roc_auc_score(y_true, scores[:, 1]))
+            return float(
+                roc_auc_score(y_true, scores, multi_class="ovr", average="macro")
+            )
+        except ValueError:
+            return float("-inf")
+
     def _sample_encoded(
         self,
         n_samples: int,
@@ -335,9 +355,12 @@ class TabPFGen:
 
         x_synth = self._init_from_training_rows(x_train, y_train, y_synth_t)
         best_x = x_synth.detach().clone()
-        best_energy = float("inf")
+        best_score = (
+            float("inf") if self.selection_metric == "energy" else float("-inf")
+        )
         best_step = 0
         mean_energy_history: list[float] = []
+        selection_score_history: list[float] = []
 
         for step in range(self.n_sgld_steps):
             x_synth, energy = self._sgld_step(x_synth, y_synth_t, x_train, y_train)
@@ -346,8 +369,29 @@ class TabPFGen:
                 raise FloatingPointError("TabPFGen mean energy became non-finite")
             mean_energy_history.append(mean_energy)
 
-            if mean_energy < best_energy:
-                best_energy = mean_energy
+            should_score = (
+                step == 0
+                or (step + 1) == self.n_sgld_steps
+                or (step + 1) % self.selection_interval == 0
+            )
+            if self.selection_metric == "energy":
+                selection_score = -mean_energy
+                is_better = mean_energy < best_score
+                comparable_score = mean_energy
+            elif should_score:
+                selection_score = self._auc_with_synthetic_context(
+                    x_synth, y_synth_t, x_train, y_train
+                )
+                is_better = selection_score > best_score
+                comparable_score = selection_score
+            else:
+                selection_score = np.nan
+                is_better = False
+                comparable_score = selection_score
+
+            selection_score_history.append(float(selection_score))
+            if is_better:
+                best_score = float(comparable_score)
                 best_step = step + 1
                 best_x = x_synth.detach().clone()
 
@@ -359,8 +403,10 @@ class TabPFGen:
 
         self.last_trace_ = TabPFGenSampleTrace(
             mean_energy=mean_energy_history,
+            selection_score=selection_score_history,
             best_step=best_step,
-            best_mean_energy=best_energy,
+            best_score=best_score,
+            selection_metric=self.selection_metric,
         )
         return (best_x if self.keep_best else x_synth), y_synth_t
 
@@ -433,12 +479,18 @@ class TabPFGen:
             )
 
         requested_labels = np.concatenate(y_targets)
-        X_synth, y_synth = self.generate_classification(
-            X,
-            y,
-            n_samples=len(requested_labels),
-            y_synth=requested_labels,
-        )
+        original_init_strategy = self.init_strategy
+        if self.init_strategy == "paired":
+            self.init_strategy = "class_matched"
+        try:
+            X_synth, y_synth = self.generate_classification(
+                X,
+                y,
+                n_samples=len(requested_labels),
+                y_synth=requested_labels,
+            )
+        finally:
+            self.init_strategy = original_init_strategy
         X_combined = np.vstack([X, X_synth])
         y_combined = np.concatenate([y, y_synth])
         return X_synth, y_synth, X_combined, y_combined

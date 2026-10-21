@@ -68,21 +68,27 @@ PY
 conda deactivate
 conda activate "${TABPFGEN_ENV}"
 python -m pip install --upgrade pip
+python -m pip uninstall -y tabpfn
 python -m pip install -r "${REPO_ROOT}/requirements-tabpfn.txt"
 python -m pip install --no-deps -e "${REPO_ROOT}"
+"${REPO_ROOT}/scripts/setup_paper_tabpfn.sh"
 python - <<'PY'
 import torch
 from packaging.version import Version
 from tabpfgen import TabPFGen
-from tabpfn import TabPFNClassifier
+from tabpfgen.paper_tabpfn import (
+    PAPER_CHECKPOINT_SHA256,
+    PAPER_TABPFN_COMMIT,
+    default_paper_checkpoint,
+)
 
 version = Version(torch.__version__.split("+", 1)[0])
-assert version >= Version("2.5"), (
-    f"TabPFN/TabPFGen env needs torch>=2.5, found {torch.__version__}"
-)
+assert version == Version("2.5.1"), torch.__version__
 print(f"tabpfgen env torch={torch.__version__}")
 print(f"TabPFGen import OK: {TabPFGen.__module__}")
-print(f"TabPFNClassifier import OK: {TabPFNClassifier.__module__}")
+print(f"Paper TabPFN commit: {PAPER_TABPFN_COMMIT}")
+print(f"Paper checkpoint: {default_paper_checkpoint()}")
+print(f"Paper checkpoint SHA256: {PAPER_CHECKPOINT_SHA256}")
 PY
 
 echo "Environment setup/check complete."
