@@ -16,10 +16,29 @@ from train_table1_generators import (
     sample_exact_training_class_counts,
     validate_training_sample_profile,
 )
-from tabpfgen.paper_tabpfn import PaperTabPFNLogitEnergy
+from tabpfgen.paper_tabpfn import (
+    PaperTabPFNLogitEnergy,
+    _install_legacy_torch_transformer_exports,
+)
 
 
 class TestReproductionPipeline(unittest.TestCase):
+    def test_legacy_torch_transformer_exports_are_restored(self):
+        transformer_module = __import__(
+            "torch.nn.modules.transformer", fromlist=["transformer"]
+        )
+        original_optional = getattr(transformer_module, "Optional", None)
+        if hasattr(transformer_module, "Optional"):
+            delattr(transformer_module, "Optional")
+        try:
+            _install_legacy_torch_transformer_exports()
+            self.assertTrue(hasattr(transformer_module, "Optional"))
+        finally:
+            if original_optional is None:
+                delattr(transformer_module, "Optional")
+            else:
+                transformer_module.Optional = original_optional
+
     def test_ensemble_configuration_does_not_reset_sampler_rng(self):
         runtime = object.__new__(PaperTabPFNLogitEnergy)
         runtime.random_state = 7

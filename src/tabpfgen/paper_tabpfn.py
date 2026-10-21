@@ -9,7 +9,7 @@ import sys
 import warnings
 from functools import partial
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 
 import numpy as np
 import torch
@@ -25,6 +25,19 @@ PAPER_CHECKPOINT_SHA256 = (
 TensorObserver = Callable[[str, torch.Tensor], None]
 
 _MODEL_CACHE: dict[tuple[str, str], tuple[torch.nn.Module, dict]] = {}
+
+
+def _install_legacy_torch_transformer_exports() -> None:
+    """Restore names exported by torch.nn.modules.transformer in older Torch."""
+    transformer_module = importlib.import_module("torch.nn.modules.transformer")
+    compatibility_exports = {
+        "Module": torch.nn.Module,
+        "Tensor": torch.Tensor,
+        "Optional": Optional,
+    }
+    for name, value in compatibility_exports.items():
+        if not hasattr(transformer_module, name):
+            setattr(transformer_module, name, value)
 
 
 def default_paper_tabpfn_root() -> Path:
@@ -70,6 +83,7 @@ def _verify_paper_assets(root: Path, checkpoint: Path) -> None:
 
 
 def _import_legacy_architecture(root: Path):
+    _install_legacy_torch_transformer_exports()
     root_text = str(root)
     loaded = sys.modules.get("tabpfn")
     if loaded is not None:
