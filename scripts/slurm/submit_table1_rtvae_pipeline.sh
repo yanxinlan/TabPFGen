@@ -6,7 +6,7 @@ OVERWRITE_FLAG="--overwrite"
 
 mkdir -p \
   "/projects/prjs1237/project/tabpfgen/logs/table1_generate" \
-  "/projects/prjs1237/project/tabpfgen/logs/table1_rtvae_evaluate"
+  "/projects/prjs1237/project/tabpfgen/logs/table1_evaluate_after_rtvae"
 
 cd "${REPO_ROOT}"
 
@@ -33,7 +33,7 @@ EVAL_JOB_ID=$(
     --parsable \
     --dependency=afterok:${GEN_JOB_ID} \
     --export=ALL,OVERWRITE_FLAG="${OVERWRITE_FLAG}" \
-    scripts/slurm/run_table1_rtvae_evaluate_gpu_array.sh
+    scripts/slurm/run_table1_evaluate_all_gpu_array.sh
 )
-echo "Submitted 432 dependent RTVAE evaluation tasks: ${EVAL_JOB_ID}"
-echo "Total submitted array tasks: 486"
+echo "Submitted 810 dependent evaluation tasks covering all 3,240 evaluations: ${EVAL_JOB_ID}"
+echo "Total submitted array tasks: 864"
