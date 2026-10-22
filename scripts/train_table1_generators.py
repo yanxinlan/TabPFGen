@@ -67,7 +67,6 @@ SYNTHCITY_HYPERPARAMS: dict[str, dict[str, Any]] = {
         "encoder_dropout": 0.1,
         "data_encoder_max_clusters": 10,
         "robust_divergence_beta": 2,
-        "clipping_value": 1,
         "sampling_patience": 500,
     },
     "ctgan": {
@@ -123,6 +122,19 @@ SYNTHCITY_HYPERPARAMS: dict[str, dict[str, Any]] = {
         "sampling_patience": 500,
     },
 }
+
+# SynthCity 0.2.12 does not expose these through the plugin constructor. They
+# are defaults of the internal model and are verified after fitting.
+SYNTHCITY_INTERNAL_HYPERPARAMS: dict[str, dict[str, Any]] = {
+    "rtvae": {"clipping_value": 1},
+}
+
+
+def synthcity_effective_hyperparams(generator_name: str) -> dict[str, Any]:
+    return {
+        **SYNTHCITY_HYPERPARAMS[generator_name],
+        **SYNTHCITY_INTERNAL_HYPERPARAMS.get(generator_name, {}),
+    }
 
 
 PLUGIN_ALIASES: dict[str, tuple[str, ...]] = {
@@ -381,6 +393,17 @@ def train_synthcity_generator(
 
     plugin = Plugins(categories=["generic"]).get(plugin_name, **params)
     plugin.fit(train_df)
+    if generator_name == "rtvae":
+        clipping_value = getattr(
+            getattr(getattr(plugin, "model", None), "model", None),
+            "clipping_value",
+            None,
+        )
+        if clipping_value != 1:
+            raise RuntimeError(
+                "Expected SynthCity RTVAE internal clipping_value=1, "
+                f"found {clipping_value!r}"
+            )
     batches: list[pd.DataFrame] = []
     synthetic = None
     for batch_index in range(10):
@@ -618,7 +641,7 @@ def main() -> None:
         hyperparameters = {}
     else:
         hyperparameters = {
-            **SYNTHCITY_HYPERPARAMS[args.generator],
+            **synthcity_effective_hyperparams(args.generator),
             "n_iter": args.n_iter,
             "random_state": args.seed,
             "device": args.device,

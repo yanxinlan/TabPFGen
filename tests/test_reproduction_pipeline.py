@@ -14,6 +14,7 @@ from analyze_reproduction_results import summarize_table1
 from train_table1_generators import (
     SYNTHCITY_HYPERPARAMS,
     sample_exact_training_class_counts,
+    synthcity_effective_hyperparams,
     validate_training_sample_profile,
 )
 from tabpfgen.paper_tabpfn import (
@@ -126,8 +127,9 @@ class TestReproductionPipeline(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             validate_training_sample_profile(synthetic.iloc[:-1], train)
 
-    def test_rtvae_uses_paper_clipping_value(self):
-        self.assertEqual(SYNTHCITY_HYPERPARAMS["rtvae"]["clipping_value"], 1)
+    def test_rtvae_uses_internal_paper_clipping_value(self):
+        self.assertNotIn("clipping_value", SYNTHCITY_HYPERPARAMS["rtvae"])
+        self.assertEqual(synthcity_effective_hyperparams("rtvae")["clipping_value"], 1)
 
 
 if __name__ == "__main__":
