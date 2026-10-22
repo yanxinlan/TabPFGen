@@ -19,13 +19,13 @@
     "Dirtiness": 28
   },
   "target_counts_synthetic": {
-    "Other_Faults": 302,
-    "K_Scratch": 220,
-    "Bumps": 200,
-    "Z_Scratch": 100,
-    "Pastry": 75,
-    "Dirtiness": 37,
-    "Stains": 36
+    "Other_Faults": 336,
+    "Bumps": 201,
+    "K_Scratch": 195,
+    "Z_Scratch": 95,
+    "Pastry": 79,
+    "Stains": 36,
+    "Dirtiness": 28
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/40982/seed_2/tabddpm/train.csv",

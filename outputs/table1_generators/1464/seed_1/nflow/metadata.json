@@ -14,8 +14,8 @@
     "2": 89
   },
   "target_counts_synthetic": {
-    "1": 287,
-    "2": 87
+    "1": 285,
+    "2": 89
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1464/seed_1/nflow/train.csv",

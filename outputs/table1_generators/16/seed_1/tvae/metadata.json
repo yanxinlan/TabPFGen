@@ -22,16 +22,16 @@
     "4": 100
   },
   "target_counts_synthetic": {
-    "9": 161,
-    "4": 126,
-    "6": 121,
-    "2": 117,
-    "10": 109,
-    "7": 98,
-    "1": 94,
-    "3": 79,
-    "5": 61,
-    "8": 34
+    "10": 100,
+    "1": 100,
+    "8": 100,
+    "5": 100,
+    "7": 100,
+    "9": 100,
+    "2": 100,
+    "6": 100,
+    "4": 100,
+    "3": 100
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/16/seed_1/tvae/train.csv",

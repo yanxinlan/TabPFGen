@@ -14,8 +14,8 @@
     "tested_positive": 134
   },
   "target_counts_synthetic": {
-    "tested_negative": 285,
-    "tested_positive": 99
+    "tested_negative": 250,
+    "tested_positive": 134
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/37/seed_2/nflow/train.csv",

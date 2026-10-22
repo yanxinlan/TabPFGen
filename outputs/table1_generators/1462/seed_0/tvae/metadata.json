@@ -14,8 +14,8 @@
     "2": 305
   },
   "target_counts_synthetic": {
-    "1": 410,
-    "2": 276
+    "1": 381,
+    "2": 305
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1462/seed_0/tvae/train.csv",

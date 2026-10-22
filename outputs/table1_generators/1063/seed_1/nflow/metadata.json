@@ -14,8 +14,8 @@
     "yes": 53
   },
   "target_counts_synthetic": {
-    "no": 175,
-    "yes": 86
+    "no": 208,
+    "yes": 53
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1063/seed_1/nflow/train.csv",

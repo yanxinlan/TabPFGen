@@ -14,8 +14,8 @@
     "true": 38
   },
   "target_counts_synthetic": {
-    "false": 539,
-    "true": 15
+    "false": 516,
+    "true": 38
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1068/seed_1/ctgan/train.csv",

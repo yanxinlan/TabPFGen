@@ -22,16 +22,16 @@
     "4": 100
   },
   "target_counts_synthetic": {
-    "5": 139,
-    "6": 131,
-    "4": 115,
-    "8": 112,
-    "10": 104,
-    "7": 97,
-    "3": 88,
-    "1": 74,
-    "2": 72,
-    "9": 68
+    "10": 100,
+    "1": 100,
+    "8": 100,
+    "5": 100,
+    "7": 100,
+    "9": 100,
+    "2": 100,
+    "6": 100,
+    "4": 100,
+    "3": 100
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/16/seed_1/nflow/train.csv",

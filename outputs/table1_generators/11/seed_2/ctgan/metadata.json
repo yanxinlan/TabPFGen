@@ -15,9 +15,9 @@
     "B": 24
   },
   "target_counts_synthetic": {
-    "L": 164,
-    "R": 128,
-    "B": 20
+    "R": 144,
+    "L": 144,
+    "B": 24
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/11/seed_2/ctgan/train.csv",

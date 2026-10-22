@@ -16,10 +16,10 @@
     "van": 100
   },
   "target_counts_synthetic": {
-    "saab": 139,
-    "opel": 107,
-    "bus": 90,
-    "van": 87
+    "bus": 109,
+    "saab": 108,
+    "opel": 106,
+    "van": 100
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/54/seed_2/nflow/train.csv",

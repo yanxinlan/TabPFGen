@@ -22,16 +22,16 @@
     "3": 100
   },
   "target_counts_synthetic": {
-    "5": 118,
-    "3": 112,
-    "4": 109,
-    "10": 106,
-    "6": 104,
+    "5": 100,
+    "4": 100,
+    "10": 100,
     "2": 100,
-    "1": 95,
-    "7": 91,
-    "9": 87,
-    "8": 78
+    "7": 100,
+    "3": 100,
+    "1": 100,
+    "9": 100,
+    "8": 100,
+    "6": 100
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/16/seed_2/tabddpm/train.csv",

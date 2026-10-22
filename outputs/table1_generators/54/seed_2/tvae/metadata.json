@@ -16,10 +16,10 @@
     "van": 100
   },
   "target_counts_synthetic": {
-    "opel": 128,
-    "van": 112,
-    "saab": 107,
-    "bus": 76
+    "bus": 109,
+    "saab": 108,
+    "opel": 106,
+    "van": 100
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/54/seed_2/tvae/train.csv",

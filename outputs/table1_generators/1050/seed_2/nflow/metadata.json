@@ -14,8 +14,8 @@
     "true": 80
   },
   "target_counts_synthetic": {
-    "false": 687,
-    "true": 94
+    "false": 701,
+    "true": 80
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/1050/seed_2/nflow/train.csv",

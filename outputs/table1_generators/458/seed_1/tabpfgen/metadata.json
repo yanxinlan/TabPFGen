@@ -16,10 +16,10 @@
     "Milton": 28
   },
   "target_counts_synthetic": {
-    "London": 158,
-    "Austen": 142,
-    "Shakespeare": 89,
-    "Milton": 31
+    "Austen": 158,
+    "London": 148,
+    "Shakespeare": 86,
+    "Milton": 28
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/458/seed_1/tabpfgen/train.csv",
@@ -31,6 +31,23 @@
     "n_sgld_steps": 1000,
     "sgld_step_size": 0.01,
     "sgld_noise_scale": 0.01,
-    "init_noise_std": 0.01
+    "init_noise_std": 0.01,
+    "attempt": 1,
+    "retry_errors": [],
+    "fallback_used": false,
+    "init_strategy": "paired",
+    "selection_metric": "train_auc",
+    "selection_interval": 1,
+    "label_strategy": "exact_train_ratio",
+    "swapped_energy_weight": 1.0,
+    "scale_features": false,
+    "n_ensembles": 3,
+    "model_path": "/projects/prjs1237/project/tabpfgen/TabPFGen/third_party/tabpfn_paper/tabpfn/models_diff/prior_diff_real_checkpoint_n_0_epoch_42.cpkt",
+    "source_root": "/projects/prjs1237/project/tabpfgen/TabPFGen/third_party/tabpfn_paper",
+    "paper_tabpfn_commit": "e640ef535e29c8f1b8b148c187744429f847e6d4",
+    "paper_checkpoint_sha256": "3c9aadaeddbf51462af8c0ee4b3ca3c697890f77e92318abbb0821b75261c392",
+    "stability_retries": false,
+    "best_step": 1,
+    "best_score": 1.0
   }
 }

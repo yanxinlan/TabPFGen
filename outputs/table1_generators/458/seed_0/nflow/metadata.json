@@ -16,10 +16,10 @@
     "Milton": 28
   },
   "target_counts_synthetic": {
-    "London": 173,
-    "Austen": 157,
-    "Shakespeare": 58,
-    "Milton": 32
+    "Austen": 158,
+    "London": 148,
+    "Shakespeare": 86,
+    "Milton": 28
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/458/seed_0/nflow/train.csv",

@@ -22,16 +22,16 @@
     "10": 100
   },
   "target_counts_synthetic": {
-    "7": 221,
-    "10": 161,
-    "8": 129,
-    "3": 122,
-    "5": 107,
-    "2": 77,
-    "1": 64,
-    "4": 59,
-    "9": 32,
-    "6": 28
+    "4": 100,
+    "2": 100,
+    "6": 100,
+    "5": 100,
+    "1": 100,
+    "9": 100,
+    "7": 100,
+    "3": 100,
+    "10": 100,
+    "8": 100
   },
   "paths": {
     "train": "/projects/prjs1237/project/tabpfgen/TabPFGen/outputs/table1_generators/22/seed_0/ctgan/train.csv",
